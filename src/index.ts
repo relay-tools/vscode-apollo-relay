@@ -1,0 +1,1 @@
+export { generateConfig } from "./generateConfig"
