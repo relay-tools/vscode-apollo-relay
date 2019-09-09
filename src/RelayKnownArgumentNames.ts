@@ -6,6 +6,7 @@ import {
   ValidationContext,
   DirectiveNode,
   TypeNode,
+  ObjectValueNode,
 } from "graphql"
 import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
 
@@ -102,6 +103,20 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
   }
 }
 
+function isNullableArgument(argumentDefinition: ObjectValueNode): boolean {
+  const typeField = argumentDefinition.fields.find(f => f.name.value === "type")
+  if (typeField == null) {
+    return false
+  }
+
+  if (typeField.value.kind !== "StringValue") {
+    return false
+  }
+  const type = parseType(typeField.value.value)
+
+  return type.kind !== "NonNullType"
+}
+
 function validateFragmentArguments(
   context: ValidationContext,
   fragmentDefinitionNode: FragmentDefinitionNode,
@@ -125,7 +140,10 @@ function validateFragmentArguments(
       } else {
         const value = argumentDef.value
         if (value.kind === "ObjectValue") {
-          if (value.fields.findIndex(field => field.name.value === "defaultValue") === -1) {
+          if (
+            value.fields.findIndex(field => field.name.value === "defaultValue") === -1 &&
+            !isNullableArgument(value)
+          ) {
             context.reportError(
               new GraphQLError(`Missing required fragment argument "${argumentDef.name.value}".`, directiveNode)
             )
