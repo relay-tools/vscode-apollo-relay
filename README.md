@@ -19,8 +19,28 @@ yarn add vscode-apollo-relay
 
 ## Usage
 
-```ts
-// sample code
+In your `apollo.config.js` file:
+
+```js
+const { config } = require("vscode-apollo-relay").generateConfig()
+module.exports = config
+```
+
+Or, if you don’t use `relay-config` yet and the default values don’t work for you:
+
+```js
+const path = require("path")
+const { config, directivesFile, includesGlobPattern } = require("vscode-apollo-relay").generateConfig()
+
+module.exports = {
+  ...config,
+  service: {
+    ...config.service,
+    localSchemaFile: "./path/to/schema.graphql",
+  },
+  includes: [directivesFile, path.join("./path/to/source", includesGlobPattern)],
+  excludes: ["./path/to/exclude"],
+}
 ```
 
 ## Development
