@@ -10,8 +10,8 @@
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/alloy/vscode-apollo-relay",
-  "homepage": "https://github.com/alloy/vscode-apollo-relay#readme",
+  "repository": "https://github.com/relay-tools/vscode-apollo-relay",
+  "homepage": "https://github.com/relay-tools/vscode-apollo-relay#readme",
   "author": {
     "name": "Eloy Durán",
     "email": "eloy.de.enige@gmail.com",

@@ -1,11 +1,11 @@
 # vscode-apollo-relay
 
 [![npm](https://img.shields.io/npm/v/vscode-apollo-relay.svg)](https://www.npmjs.com/package/vscode-apollo-relay)
-[![build](https://img.shields.io/travis/alloy/vscode-apollo-relay/master.svg)](https://travis-ci.org/alloy/vscode-apollo-relay/builds)
+[![build](https://img.shields.io/travis/relay-tools/vscode-apollo-relay/master.svg)](https://travis-ci.org/relay-tools/vscode-apollo-relay/builds)
 
 Simple configuration of vscode-apollo for Relay projects.
 
-[Changelog](https://github.com/alloy/vscode-apollo-relay/blob/master/CHANGELOG.md)
+[Changelog](https://github.com/relay-tools/vscode-apollo-relay/blob/master/CHANGELOG.md)
 
 ## Install
 
