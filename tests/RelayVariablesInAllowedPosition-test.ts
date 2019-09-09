@@ -130,7 +130,6 @@ describe(RelayVariablesInAllowedPosition, () => {
     )
   })
 
-  // We want this to work in the future
   it("Validates @arguments usage", () => {
     const errors = validateDocuments(`
       query MyQuery($id: ID) {
@@ -139,6 +138,26 @@ describe(RelayVariablesInAllowedPosition, () => {
       fragment MyFragment on Query @argumentDefinitions(id: { type: "ID!" }) {
         ... {
           node(id: $id) {
+            bar
+          }
+        }
+      }
+  `)
+
+    expect(errors.length).toBe(1)
+    expect(errors).toContainEqual(
+      expect.objectContaining({ message: 'Variable "$id" of type "ID" used in position expecting type "ID!".' })
+    )
+  })
+
+  it("Validates variables used in fragments defined by operation", () => {
+    const errors = validateDocuments(`
+      query MyQuery($id: ID, $shouldInclude: Boolean!) {
+        ... MyFragment
+      }
+      fragment MyFragment on Query {
+        ... {
+          node(id: $id) @include(if: $shouldInclude) {
             bar
           }
         }

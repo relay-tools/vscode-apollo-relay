@@ -52,7 +52,33 @@ describe(RelayKnownVariableNames, () => {
 
     expect(errors.length).toBe(1)
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Variable "$shouldInclude" is not defined by fragment "MyFragment".' })
+      expect.objectContaining({
+        message:
+          'Variable "$shouldInclude" is not defined by fragment "MyFragment" or defined in a compatible way across all operations using "MyFragment".',
+      })
+    )
+  })
+
+  it("Allows operation defined variables", () => {
+    const errors = validateDocuments(`
+      query MyQuery ($id: ID!) {
+        ... MyFragment
+      }
+      fragment MyFragment on Query {
+        ... {
+          node(id: $id) @include(if: $shouldInclude) {
+            bar
+          }
+        }
+      }
+    `)
+
+    expect(errors).toHaveLength(1)
+    expect(errors).toContainEqual(
+      expect.objectContaining({
+        message:
+          'Variable "$shouldInclude" is not defined by fragment "MyFragment" or defined in a compatible way across all operations using "MyFragment".',
+      })
     )
   })
 })

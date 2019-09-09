@@ -1,6 +1,7 @@
 import { ValidationRule } from "graphql"
 import { GraphQLError } from "./dependencies"
 import { getArgumentDefinitions } from "./argumentDefinitions"
+import { getOperationsDefinedVariableDefinitionsForFragment } from "./operationsReferencingFragment"
 
 export function undefinedVarMessage(varName: string, opName?: string): string {
   return opName
@@ -9,7 +10,7 @@ export function undefinedVarMessage(varName: string, opName?: string): string {
 }
 
 export function undefinedVarMessageFragment(varName: string, fragmentName: string): string {
-  return `Variable "$${varName}" is not defined by fragment "${fragmentName}".`
+  return `Variable "$${varName}" is not defined by fragment "${fragmentName}" or defined in a compatible way across all operations using "${fragmentName}".`
 }
 
 export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariableNames(context) {
@@ -49,12 +50,16 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
           return
         }
 
-        varUsages.forEach(({ node }) => {
-          const varName = node.name.value
-          if (!variableNameDefined[varName]) {
+        const operationsVariables = getOperationsDefinedVariableDefinitionsForFragment(
+          context,
+          fragmentDefinitionNode.name.value
+        )
+        varUsages.forEach(varUsage => {
+          const varName = varUsage.node.name.value
+          if (!variableNameDefined[varName] && operationsVariables[varName] == null) {
             context.reportError(
               new GraphQLError(undefinedVarMessageFragment(varName, fragmentDefinitionNode.name.value), [
-                node,
+                varUsage.node,
                 fragmentDefinitionNode,
               ])
             )

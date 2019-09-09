@@ -22,9 +22,15 @@ export const { defaultValidationRules } = mod.require(
   "apollo-language-server/lib/errors/validation"
 ) as typeof _ApolloValidation
 
-export const { GraphQLError, parseType, visit, isNonNullType, isTypeSubTypeOf, typeFromAST } = mod.require(
-  "graphql"
-) as typeof _GraphQL
+export const {
+  GraphQLError,
+  parseType,
+  visit,
+  isNonNullType,
+  isTypeSubTypeOf,
+  typeFromAST,
+  GraphQLNonNull,
+} = mod.require("graphql") as typeof _GraphQL
 
 export const didYouMean = mod.require("graphql/jsutils/didYouMean").default as (suggestions: string[]) => string
 

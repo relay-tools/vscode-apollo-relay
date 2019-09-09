@@ -1,6 +1,7 @@
 import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule, VariableNode, GraphQLInputType } from "graphql"
 import { isNonNullType, isTypeSubTypeOf, typeFromAST, GraphQLError, parseType } from "./dependencies"
 import { getArgumentDefinitions } from "./argumentDefinitions"
+import { getOperationsDefinedVariableDefinitionsForFragment } from "./operationsReferencingFragment"
 
 export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVariablesInAllowedPosition(context) {
   let varDefMap = Object.create(null)
@@ -84,6 +85,24 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
             } catch (e) {}
           })
         }
+
+        const operationDefinedVariables = getOperationsDefinedVariableDefinitionsForFragment(
+          context,
+          fragmentDefinition.name.value
+        )
+
+        Object.keys(operationDefinedVariables).forEach(varName => {
+          const def = operationDefinedVariables[varName]
+
+          if (varDefMap[varName]) {
+            return
+          }
+          varDefMap[varName] = {
+            type: def.type,
+            defaultValue: def.defaultValue,
+            node: def.node,
+          }
+        })
       },
       leave(fragmentDefinition) {
         const usages = context.getVariableUsages(fragmentDefinition)
