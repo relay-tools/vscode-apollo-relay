@@ -6,13 +6,15 @@ import { getLanguagePlugin } from "relay-compiler/lib/RelayCompilerMain"
 import { defaultValidationRules, RelayConfig } from "./dependencies"
 import { generateDirectivesFile } from "./generateDirectivesFile"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
+import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
+import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
   src: "./src",
 }
 
-const ValidationRulesToExcludeForRelay = ["KnownArgumentNames", "NoUndefinedVariables"]
+const ValidationRulesToExcludeForRelay = ["KnownArgumentNames", "NoUndefinedVariables", "VariablesInAllowedPosition"]
 
 function loadRelayConfig() {
   if (!RelayConfig) {
@@ -42,6 +44,8 @@ export function generateConfig() {
       },
       validationRules: [
         RelayKnownArgumentNames,
+        RelayKnownVariableNames,
+        RelayVariablesInAllowedPosition,
         ...defaultValidationRules.filter(
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
