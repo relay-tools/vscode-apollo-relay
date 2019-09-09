@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/vscode-apollo-relay.svg)](https://www.npmjs.com/package/vscode-apollo-relay)
 [![build](https://img.shields.io/travis/relay-tools/vscode-apollo-relay/master.svg)](https://travis-ci.org/relay-tools/vscode-apollo-relay/builds)
 
-Simple configuration of vscode-apollo for Relay projects.
+Simple configuration of [vscode-apollo] for Relay projects.
 
 Features:
 
@@ -73,4 +73,5 @@ yarn run test
 
 MIT © [Eloy Durán](https://github.com/alloy)
 
+[vscode-apollo]: https://marketplace.visualstudio.com/items?itemName=apollographql.vscode-apollo
 [relay-config]: https://relay.dev/docs/en/installation-and-setup#set-up-relay-with-a-single-config-file
