@@ -1,5 +1,4 @@
 import {
-  ArgumentNode,
   FragmentSpreadNode,
   ValidationRule,
   FragmentDefinitionNode,
@@ -9,6 +8,7 @@ import {
   ObjectValueNode,
 } from "graphql"
 import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
+import { getArgumentDefinitions } from "./argumentDefinitions"
 
 const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNames")!
 
@@ -112,9 +112,12 @@ function isNullableArgument(argumentDefinition: ObjectValueNode): boolean {
   if (typeField.value.kind !== "StringValue") {
     return false
   }
-  const type = parseType(typeField.value.value)
-
-  return type.kind !== "NonNullType"
+  try {
+    const type = parseType(typeField.value.value)
+    return type.kind !== "NonNullType"
+  } catch (e) {
+    return false
+  }
 }
 
 function validateFragmentArguments(
@@ -167,18 +170,4 @@ function validateFragmentArguments(
       )
     })
   }
-}
-
-function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitionNode) {
-  let argumentDefinitionNodes: readonly ArgumentNode[] | undefined
-  visit(fragmentDefinitionNode, {
-    Directive(argumentDefinitionsDirectiveNode) {
-      if (argumentDefinitionsDirectiveNode.name.value === "argumentDefinitions") {
-        argumentDefinitionNodes = argumentDefinitionsDirectiveNode.arguments
-      } else {
-        return false
-      }
-    },
-  })
-  return argumentDefinitionNodes
 }

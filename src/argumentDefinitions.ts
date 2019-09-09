@@ -1,4 +1,5 @@
-import { FragmentDefinitionNode, visit, ArgumentNode } from "graphql"
+import { FragmentDefinitionNode, ArgumentNode } from "graphql"
+import { visit } from "./dependencies"
 
 export function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitionNode) {
   let argumentDefinitionNodes: readonly ArgumentNode[] | undefined
