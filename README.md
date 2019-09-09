@@ -5,6 +5,12 @@
 
 Simple configuration of vscode-apollo for Relay projects.
 
+Features:
+
+- Read all user configuration from [relay-config], if the project is setup with it.
+- Provides definitions for all Relay directives for validation and auto-completion purposes.
+- Provides validation of `@argumentDefinitions` and `@arguments` directives.
+
 [Changelog](https://github.com/relay-tools/vscode-apollo-relay/blob/master/CHANGELOG.md)
 
 ## Install
@@ -26,11 +32,15 @@ const { config } = require("vscode-apollo-relay").generateConfig()
 module.exports = config
 ```
 
-Or, if you don’t use `relay-config` yet and the default values don’t work for you:
+Or, if you don’t use [relay-config] and the default values don’t work for you:
 
 ```js
 const path = require("path")
-const { config, directivesFile, includesGlobPattern } = require("vscode-apollo-relay").generateConfig()
+const {
+  config,
+  directivesFile,
+  includesGlobPattern
+} = require("vscode-apollo-relay").generateConfig()
 
 module.exports = {
   ...config,
@@ -38,7 +48,10 @@ module.exports = {
     ...config.service,
     localSchemaFile: "./path/to/schema.graphql",
   },
-  includes: [directivesFile, path.join("./path/to/source", includesGlobPattern)],
+  includes: [
+    directivesFile,
+    path.join("./path/to/source", includesGlobPattern(["js", "jsx"]))
+  ],
   excludes: ["./path/to/exclude"],
 }
 ```
@@ -59,3 +72,5 @@ yarn run test
 ## License
 
 MIT © [Eloy Durán](https://github.com/alloy)
+
+[relay-config]: https://relay.dev/docs/en/installation-and-setup#set-up-relay-with-a-single-config-file
