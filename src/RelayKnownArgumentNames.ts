@@ -172,8 +172,7 @@ function validateFragmentArguments(
     argumentNodes.forEach(argumentNode => {
       const suggestions: string[] = suggestionList(
         argumentNode.name.value,
-        // FIXME: Unsure why argumentDefinitions could be `undefined` here again
-        argumentDefinitionNodes!.map(argDef => argDef.name.value)
+        argumentDefinitionNodes.map(argDef => argDef.name.value)
       )
       context.reportError(
         new GraphQLError(
