@@ -1,13 +1,67 @@
-import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule } from "graphql"
+import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule, VariableNode, GraphQLInputType } from "graphql"
 import { isNonNullType, isTypeSubTypeOf, typeFromAST, GraphQLError, parseType } from "./dependencies"
 import { getArgumentDefinitions } from "./argumentDefinitions"
 
 export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVariablesInAllowedPosition(context) {
   let varDefMap = Object.create(null)
+  var varUsageMap: { node: VariableNode; type: GraphQLInputType; defaultValue: ValueNode | undefined }[] = []
   return {
+    FragmentSpread(node) {
+      // Collect variable arguments used inside fragment spreads such that we know the type for these
+      // usages as well
+      if (node.directives == null) {
+        return
+      }
+
+      const argumentsDirective = node.directives.find(d => d.name.value === "arguments")
+      if (argumentsDirective == null || argumentsDirective.arguments == null) {
+        return
+      }
+
+      const fragmentSpreadDefinition = context.getFragment(node.name.value)
+
+      if (fragmentSpreadDefinition == null) {
+        return
+      }
+      const argumentDefinitions = getArgumentDefinitions(fragmentSpreadDefinition)
+
+      if (argumentDefinitions == null) {
+        return
+      }
+
+      argumentsDirective.arguments.forEach(arg => {
+        const value = arg.value
+        if (value.kind !== "Variable") {
+          return
+        }
+        const argDef = argumentDefinitions.find(def => def.name.value === arg.name.value)
+
+        if (argDef == null || argDef.value.kind !== "ObjectValue") {
+          return
+        }
+
+        const typeField = argDef.value.fields.find(f => f.name.value === "type")
+        if (typeField == null || typeField.value.kind !== "StringValue") {
+          return
+        }
+        const defaultValue = argDef.value.fields.find(f => f.name.value === "defaultValue")
+        try {
+          const parsedType = parseType(typeField.value.value)
+          varUsageMap.push({
+            node: value,
+            type: typeFromAST(
+              context.getSchema(),
+              parsedType as any /* Not sure why this is needed */
+            ) as GraphQLInputType,
+            defaultValue: defaultValue == null ? undefined : defaultValue.value,
+          })
+        } catch (e) {}
+      })
+    },
     FragmentDefinition: {
       enter(fragmentDefinition) {
         varDefMap = Object.create(null)
+        varUsageMap = []
         const argumentDefinitions = getArgumentDefinitions(fragmentDefinition)
 
         if (argumentDefinitions != null) {
@@ -19,10 +73,12 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
             if (typeField == null || typeField.value.kind !== "StringValue") {
               return
             }
+            const defaultValue = def.value.fields.find(f => f.name.value === "defaultValue")
             try {
               const parsedType = parseType(typeField.value.value)
               varDefMap[def.name.value] = {
                 type: parsedType,
+                defaultValue: defaultValue == null ? undefined : defaultValue.value,
                 node: def,
               }
             } catch (e) {}
@@ -35,7 +91,21 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
         for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value
           const varDef = varDefMap[varName]
-          if (varDef && type) {
+          if (varDef) {
+            let workingType
+            let workingDefault
+            if (type) {
+              workingType = type
+              workingDefault = defaultValue
+            } else {
+              const argUsage = varUsageMap.find(vu => vu.node === node)
+              if (argUsage != null) {
+                workingType = argUsage.type
+                workingDefault = argUsage.defaultValue
+              } else {
+                continue
+              }
+            }
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if
             // the variable type is non-null when the expected type is nullable.
@@ -43,9 +113,12 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
             // than the expected item type (contravariant).
             const schema = context.getSchema()
             const varType = typeFromAST(schema, varDef.type)
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, workingType, workingDefault)) {
               context.reportError(
-                new GraphQLError(badVarPosMessage(varName, varType.toString(), type.toString()), [varDef.node, node])
+                new GraphQLError(badVarPosMessage(varName, varType.toString(), workingType.toString()), [
+                  varDef.node,
+                  node,
+                ])
               )
             }
           }
@@ -55,6 +128,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
     OperationDefinition: {
       enter() {
         varDefMap = Object.create(null)
+        varUsageMap = []
       },
       leave(operation) {
         const usages = context.getVariableUsages(operation)
@@ -62,7 +136,21 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
         for (const { node, type, defaultValue } of usages) {
           const varName = node.name.value
           const varDef = varDefMap[varName]
-          if (varDef && type) {
+          if (varDef) {
+            let workingType
+            let workingDefault
+            if (type) {
+              workingType = type
+              workingDefault = defaultValue
+            } else {
+              const argUsage = varUsageMap.find(vu => vu.node === node)
+              if (argUsage != null) {
+                workingType = argUsage.type
+                workingDefault = argUsage.defaultValue
+              } else {
+                continue
+              }
+            }
             // A var type is allowed if it is the same or more strict (e.g. is
             // a subtype of) than the expected type. It can be more strict if
             // the variable type is non-null when the expected type is nullable.
@@ -70,9 +158,12 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
             // than the expected item type (contravariant).
             const schema = context.getSchema()
             const varType = typeFromAST(schema, varDef.type)
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, type, defaultValue)) {
+            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, workingType, workingDefault)) {
               context.reportError(
-                new GraphQLError(badVarPosMessage(varName, varType.toString(), type.toString()), [varDef.node, node])
+                new GraphQLError(badVarPosMessage(varName, varType.toString(), workingType.toString()), [
+                  varDef.node,
+                  node,
+                ])
               )
             }
           }
@@ -83,6 +174,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
       varDefMap[node.variable.name.value] = {
         type: node.type,
         node: node,
+        defaultValue: node.defaultValue,
       }
     },
   }
@@ -96,7 +188,7 @@ function allowedVariableUsage(
   varType: GraphQLType,
   varDefaultValue: ValueNode | undefined,
   locationType: GraphQLType,
-  locationDefaultValue?: any
+  locationDefaultValue: ValueNode | undefined
 ): boolean {
   if (isNonNullType(locationType) && !isNonNullType(varType)) {
     const hasNonNullVariableDefaultValue = varDefaultValue != null && varDefaultValue.kind !== "NullValue"

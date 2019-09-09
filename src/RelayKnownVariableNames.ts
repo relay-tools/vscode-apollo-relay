@@ -46,7 +46,7 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
       leave(fragmentDefinitionNode) {
         const varUsages = context.getVariableUsages(fragmentDefinitionNode)
         if (varUsages.length === 0) {
-          return false
+          return
         }
 
         varUsages.forEach(({ node }) => {

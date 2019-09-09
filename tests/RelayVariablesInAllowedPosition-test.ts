@@ -56,9 +56,43 @@ describe(RelayVariablesInAllowedPosition, () => {
 
   it("Allows valid fragment", () => {
     const errors = validateDocuments(`
-      fragment MyFragment on Query @argumentDefinition(id: { type: "ID!" }) {
+      fragment MyFragment on Query @argumentDefinitions(id: { type: "ID!" }) {
         ... {
           node(id: $id) {
+            bar
+          }
+        }
+      }
+  `)
+
+    expect(errors.length).toBe(0)
+  })
+
+  it("Respects default values allowing nullable types in non nullable locations", () => {
+    const errors = validateDocuments(`
+      query MyQuery ($ids: [ID!]) {
+        ... MyFragment @arguments(ids: $ids)
+      }
+      fragment MyFragment on Query @argumentDefinitions(ids: { type: "[ID!]!", defaultValue: [] }) {
+        ... {
+          nodes(ids: $ids) {
+            bar
+          }
+        }
+      }
+  `)
+
+    expect(errors.length).toBe(0)
+  })
+
+  it("Respects default values in operation definition allowing nullable types in non nullable locations", () => {
+    const errors = validateDocuments(`
+      query MyQueryTest ($ids: [ID!] = []) {
+        ... MyFragment @arguments(ids: $ids)
+      }
+      fragment MyFragment on Query @argumentDefinitions(ids: { type: "[ID!]!" }) {
+        ... {
+          nodes(ids: $ids) {
             bar
           }
         }
@@ -97,7 +131,7 @@ describe(RelayVariablesInAllowedPosition, () => {
   })
 
   // We want this to work in the future
-  it.skip("Validates @arguments usage", () => {
+  it("Validates @arguments usage", () => {
     const errors = validateDocuments(`
       query MyQuery($id: ID) {
         ... MyFragment @arguments(id: $id)
