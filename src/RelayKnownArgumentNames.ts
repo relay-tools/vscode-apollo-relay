@@ -5,8 +5,6 @@ import {
   FragmentDefinitionNode,
   ValidationContext,
   DirectiveNode,
-  ValueNode,
-  StringValueNode,
   TypeNode,
 } from "graphql"
 import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"

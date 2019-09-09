@@ -4,7 +4,9 @@
     "lib": ["es6"],
     "module": "commonjs",
     "declaration": true,
-    "importHelpers": false
+    "importHelpers": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["src/typings/*.d.ts", "src/**/*.ts", "tests/**/*.ts"]
 }

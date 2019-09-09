@@ -1,9 +1,7 @@
 import { generateConfig } from "../src/generateConfig"
 import { Config } from "relay-compiler/lib/RelayCompilerMain"
-import { LocalServiceConfig, ClientConfigFormat } from "apollo-language-server/lib/config"
+import { LocalServiceConfig } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql/validation"
-import { parse, buildSchema } from "graphql"
-import { readFileSync } from "fs"
 
 jest.mock("cosmiconfig", () => () => ({
   searchSync: () => ({
@@ -15,68 +13,50 @@ jest.mock("cosmiconfig", () => () => ({
   }),
 }))
 
-function createSchema(config: ClientConfigFormat) {
-  const directivesFile = config.includes[0]
-  const schemaSource = `
-      ${readFileSync(directivesFile, "utf8")}
-
-      type Foo {
-        bar: String
-        baz: Boolean
-      }
-
-      type Query {
-        foo: Foo
-      }
-    `
-  const schema = buildSchema(schemaSource)
-  return schema
-}
-
 describe(generateConfig, () => {
   xdescribe("when user does not use relay-config", () => {
     it("uses a default schema file", () => {
       jest.mock("relay-config", () => ({ loadConfig: () => null }))
-      const config = generateConfig().client!.service as LocalServiceConfig
+      const config = generateConfig().config.client!.service as LocalServiceConfig
       expect(config.localSchemaFile).toEqual("./data/schema.graphql")
     })
 
     it("uses a default source root", () => {
       jest.mock("relay-config", () => ({ loadConfig: () => null }))
-      const config = generateConfig().client!
+      const config = generateConfig().config.client!
       expect(config.includes).toEqual("./src/**/*.{graphql,js,jsx}")
     })
   })
 
   it("specifies the schema file", () => {
-    const config = generateConfig().client!.service as LocalServiceConfig
+    const config = generateConfig().config.client!.service as LocalServiceConfig
     expect(config.localSchemaFile).toEqual("path/to/schema.graphql")
   })
 
   it("specifies the source files to include", () => {
-    const config = generateConfig().client!
+    const config = generateConfig().config.client!
     expect(config.includes).toContain("path/to/src-root/**/*.{graphql,js,jsx}")
   })
 
   it("specifies the source files to exclude", () => {
-    const config = generateConfig().client!
+    const config = generateConfig().config.client!
     expect(config.excludes).toContain("path/to/exclude")
   })
 
   it("excludes validation rules that are incompatible with Relay", () => {
-    const config = generateConfig().client!
+    const config = generateConfig().config.client!
     const rules = config.validationRules as ValidationRule[]
     expect(rules.map(({ name }) => name)).not.toContain("NoUndefinedVariables")
   })
 
   it("includes the RelayUnknownArgumentNames validation rule", () => {
-    const config = generateConfig().client!
+    const config = generateConfig().config.client!
     const rules = config.validationRules as ValidationRule[]
     expect(rules.map(({ name }) => name)).toContain("RelayKnownArgumentNames")
   })
 
   it("specifies the relay-compiler directives dump to include", () => {
-    const config = generateConfig().client!
+    const config = generateConfig().config.client!
     expect(config.includes).toContainEqual(expect.stringMatching(/relay-compiler-directives-v\d\.\d\.\d/))
   })
 

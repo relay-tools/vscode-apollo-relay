@@ -28,14 +28,14 @@ function loadRelayConfig() {
   }
 }
 
-export function generateConfig(): ApolloConfigFormat {
+export function generateConfig() {
   const relayConfig = loadRelayConfig()
 
   const languagePlugin = getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
   const directivesFile = generateDirectivesFile()
-  const globPattern = `**/*.{graphql,${languagePlugin.inputExtensions.join(",")}}`
+  const includesGlobPattern = `**/*.{graphql,${languagePlugin.inputExtensions.join(",")}}`
 
-  return {
+  const config: ApolloConfigFormat = {
     client: {
       service: {
         name: "local",
@@ -47,9 +47,11 @@ export function generateConfig(): ApolloConfigFormat {
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
       ],
-      includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, globPattern)],
+      includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern)],
       excludes: relayConfig ? relayConfig.exclude : [],
       tagName: "graphql",
     },
   }
+
+  return { config, directivesFile, includesGlobPattern }
 }
