@@ -22,17 +22,27 @@ export const RelayKnownArgumentNames: ValidationRule = function RelayKnownArgume
       visit(argumentNode, originalRuleVisitor)
       return false
     },
+    FragmentSpread(fragmentSpreadNode) {
+      const fragmentDefinitionNode = context.getFragment(fragmentSpreadNode.name.value)
+      if (
+        fragmentDefinitionNode &&
+        (!fragmentSpreadNode.directives ||
+          fragmentSpreadNode.directives.findIndex(directive => directive.name.value === "arguments") === -1) &&
+        getArgumentDefinitions(fragmentDefinitionNode)
+      ) {
+        validateFragmentArguments(context, fragmentDefinitionNode, fragmentSpreadNode)
+      }
+    },
     Directive(directiveNode, _key, _parent, _nodePath, ancestors) {
       if (directiveNode.name.value === "argumentDefinitions") {
         validateFragmentArgumentDefinitions(context, directiveNode)
         return false
       }
       if (directiveNode.name.value === "arguments") {
-        const fragmentSpread = ancestors[ancestors.length - 1] as FragmentSpreadNode
-        const fragmentDefinitionNode = context.getFragment(fragmentSpread.name.value)
-        // If this doesn’t pass it will get flagged as a unknown fragment, so we don’t need to report it.
+        const fragmentSpreadNode = ancestors[ancestors.length - 1] as FragmentSpreadNode
+        const fragmentDefinitionNode = context.getFragment(fragmentSpreadNode.name.value)
         if (fragmentDefinitionNode) {
-          validateFragmentArguments(context, fragmentDefinitionNode, fragmentSpread, directiveNode)
+          validateFragmentArguments(context, fragmentDefinitionNode, fragmentSpreadNode, directiveNode)
         }
         return false
       }
@@ -123,19 +133,19 @@ function isNullableArgument(argumentDefinition: ObjectValueNode): boolean {
 function validateFragmentArguments(
   context: ValidationContext,
   fragmentDefinitionNode: FragmentDefinitionNode,
-  fragmentSpread: FragmentSpreadNode,
-  directiveNode: DirectiveNode
+  fragmentSpreadNode: FragmentSpreadNode,
+  directiveNode?: DirectiveNode
 ) {
   const argumentDefinitionNodes = getArgumentDefinitions(fragmentDefinitionNode)
   if (!argumentDefinitionNodes) {
     context.reportError(
       new GraphQLError(
-        `No fragment argument definitions exist for fragment "${fragmentSpread.name.value}".`,
-        fragmentSpread
+        `No fragment argument definitions exist for fragment "${fragmentSpreadNode.name.value}".`,
+        fragmentSpreadNode
       )
     )
   } else {
-    const argumentNodes = [...(directiveNode.arguments || [])]
+    const argumentNodes = [...((directiveNode && directiveNode.arguments) || [])]
     argumentDefinitionNodes.forEach(argumentDef => {
       const argumentIndex = argumentNodes.findIndex(a => a.name.value === argumentDef.name.value)
       if (argumentIndex >= 0) {
@@ -148,7 +158,10 @@ function validateFragmentArguments(
             !isNullableArgument(value)
           ) {
             context.reportError(
-              new GraphQLError(`Missing required fragment argument "${argumentDef.name.value}".`, directiveNode)
+              new GraphQLError(
+                `Missing required fragment argument "${argumentDef.name.value}".`,
+                directiveNode || fragmentSpreadNode
+              )
             )
           }
         } else {

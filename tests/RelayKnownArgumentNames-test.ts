@@ -225,6 +225,23 @@ describe(RelayKnownArgumentNames, () => {
       )
     })
 
+    it.only("validates required arguments when no @arguments directive is used", () => {
+      const errors = validateDocuments(`
+        fragment FragmentWithArguments on Foo @argumentDefinitions(
+          requiredArgument: { type: "String!" }
+        ) {
+          bar
+        }
+
+        fragment FragmentSpreadWithMissingArgument on Foo {
+          ...FragmentWithArguments
+        }
+      `)
+      expect(errors).toContainEqual(
+        expect.objectContaining({ message: `Missing required fragment argument "requiredArgument".` })
+      )
+    })
+
     it("suggests alternatives when argument is unknown", () => {
       const errors = validateDocuments(`
         fragment FragmentWithArguments on Foo @argumentDefinitions(
