@@ -33,7 +33,7 @@ export function generateConfig() {
 
   const languagePlugin = getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
   const directivesFile = generateDirectivesFile()
-  const includesGlobPattern = `**/*.{graphql,${languagePlugin.inputExtensions.join(",")}}`
+  const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
 
   const config: ApolloConfigFormat = {
     client: {
@@ -47,7 +47,10 @@ export function generateConfig() {
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
       ],
-      includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern)],
+      includes: [
+        directivesFile,
+        path.join((relayConfig || DEFAULTS).src, includesGlobPattern(languagePlugin.inputExtensions)),
+      ],
       excludes: relayConfig ? relayConfig.exclude : [],
       tagName: "graphql",
     },
