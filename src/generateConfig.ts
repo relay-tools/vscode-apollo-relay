@@ -7,7 +7,6 @@ import { defaultValidationRules, RelayConfig } from "./dependencies"
 import { generateDirectivesFile } from "./generateDirectivesFile"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 
-// TODO: Document these in README as things to lookout for.
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
   src: "./src",

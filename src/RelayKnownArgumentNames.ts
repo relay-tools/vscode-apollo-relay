@@ -44,9 +44,6 @@ export const RelayKnownArgumentNames: ValidationRule = function RelayKnownArgume
   }
 }
 
-/**
- * TODO: Validate `defaultValue` is of correct type.
- */
 function validateFragmentArgumentDefinitions(context: ValidationContext, directiveNode: DirectiveNode) {
   if (!directiveNode.arguments || directiveNode.arguments.length === 0) {
     context.reportError(new GraphQLError(`Missing required argument definitions.`, directiveNode))
@@ -124,8 +121,6 @@ function validateFragmentArguments(
     argumentDefinitionNodes.forEach(argumentDef => {
       const argumentIndex = argumentNodes.findIndex(a => a.name.value === argumentDef.name.value)
       if (argumentIndex >= 0) {
-        // Found the arg
-        // TODO: Check value type?
         argumentNodes.splice(argumentIndex, 1)
       } else {
         const value = argumentDef.value
@@ -143,7 +138,7 @@ function validateFragmentArguments(
     argumentNodes.forEach(argumentNode => {
       const suggestions: string[] = suggestionList(
         argumentNode.name.value,
-        // TODO: Unsure why argumentDefinitions could be `undefined` here again
+        // FIXME: Unsure why argumentDefinitions could be `undefined` here again
         argumentDefinitionNodes!.map(argDef => argDef.name.value)
       )
       context.reportError(
