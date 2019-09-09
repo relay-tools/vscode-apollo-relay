@@ -24,7 +24,7 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
 
         usages.forEach(({ node }) => {
           const varName = node.name.value
-          if (variableNameDefined[varName] !== true) {
+          if (!variableNameDefined[varName]) {
             context.reportError(
               new GraphQLError(undefinedVarMessage(varName, operation.name && operation.name.value), [node, operation])
             )
@@ -39,7 +39,7 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
       enter(fragmentDefinitionNode) {
         variableNameDefined = Object.create(null)
         const argumentDefinitions = getArgumentDefinitions(fragmentDefinitionNode)
-        if (argumentDefinitions != null) {
+        if (argumentDefinitions) {
           argumentDefinitions.forEach(def => (variableNameDefined[def.name.value] = true))
         }
       },
@@ -51,7 +51,7 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
 
         varUsages.forEach(({ node }) => {
           const varName = node.name.value
-          if (variableNameDefined[varName] !== true) {
+          if (!variableNameDefined[varName]) {
             context.reportError(
               new GraphQLError(undefinedVarMessageFragment(varName, fragmentDefinitionNode.name.value), [
                 node,

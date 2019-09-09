@@ -64,7 +64,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
         varUsageMap = []
         const argumentDefinitions = getArgumentDefinitions(fragmentDefinition)
 
-        if (argumentDefinitions != null) {
+        if (argumentDefinitions) {
           argumentDefinitions.forEach(def => {
             if (def.value.kind !== "ObjectValue") {
               return
@@ -99,7 +99,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
               workingDefault = defaultValue
             } else {
               const argUsage = varUsageMap.find(vu => vu.node === node)
-              if (argUsage != null) {
+              if (argUsage) {
                 workingType = argUsage.type
                 workingDefault = argUsage.defaultValue
               } else {
@@ -144,7 +144,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
               workingDefault = defaultValue
             } else {
               const argUsage = varUsageMap.find(vu => vu.node === node)
-              if (argUsage != null) {
+              if (argUsage) {
                 workingType = argUsage.type
                 workingDefault = argUsage.defaultValue
               } else {
