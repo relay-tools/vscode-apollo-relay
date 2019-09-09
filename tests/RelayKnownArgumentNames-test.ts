@@ -177,8 +177,8 @@ describe(RelayKnownArgumentNames, () => {
     it("validates that required arguments exist in list", () => {
       const errors = validateDocuments(`
         fragment FragmentWithArguments on Foo @argumentDefinitions(
-          requiredArgument: { type: String }
-          optionalArgument: { type: String, defaultValue: "something" }
+          requiredArgument: { type: "String!" }
+          optionalArgument: { type: "String", defaultValue: "something" }
         ) {
           bar
         }
@@ -192,10 +192,26 @@ describe(RelayKnownArgumentNames, () => {
       )
     })
 
+    it("considers nullable arguments as optional", () => {
+      const errors = validateDocuments(`
+        fragment FragmentWithArguments on Foo @argumentDefinitions(
+          requiredArgument: { type: "String!" }
+          optionalArgument: { type: "String" }
+        ) {
+          bar
+        }
+
+        fragment FragmentSpreadWithMissingArgument on Foo {
+          ...FragmentWithArguments @arguments(requiredArgument: "something")
+        }
+      `)
+      expect(errors).toEqual([])
+    })
+
     it("validates required arguments when no list is given", () => {
       const errors = validateDocuments(`
         fragment FragmentWithArguments on Foo @argumentDefinitions(
-          requiredArgument: { type: String }
+          requiredArgument: { type: "String!" }
         ) {
           bar
         }
@@ -212,7 +228,7 @@ describe(RelayKnownArgumentNames, () => {
     it("suggests alternatives when argument is unknown", () => {
       const errors = validateDocuments(`
         fragment FragmentWithArguments on Foo @argumentDefinitions(
-          requiredArgument: { type: String }
+          requiredArgument: { type: "String!" }
         ) {
           bar
         }
