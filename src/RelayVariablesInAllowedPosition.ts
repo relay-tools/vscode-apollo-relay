@@ -37,6 +37,8 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
       const schema = context.getSchema()
       const varUsages = getRecursiveVariableUsagesWithRelayInfo(context, opDef)
 
+      const errors = Object.create(null)
+
       varUsages.forEach(usage => {
         // We only check for variables that are not defined in the fragment itself
         // as the visitor for the fragment definition will test for that
@@ -59,9 +61,13 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
             // The diagnostics in vscode does seemingly not support errors in one file having a related location
             // in a different file
             const location = [...(!usage.usingFragmentName ? [usage.node] : []), opDef]
-            context.reportError(
-              new GraphQLError(badVarPosMessage(varName, varDefType.toString(), locationType.toString()), location)
-            )
+            const errorStr = badVarPosMessage(varName, varDefType.toString(), locationType.toString())
+            if (!errors[errorStr]) {
+              if (usage.usingFragmentName) {
+                errors[errorStr] = true
+              }
+              context.reportError(new GraphQLError(errorStr, location))
+            }
           }
         }
       })

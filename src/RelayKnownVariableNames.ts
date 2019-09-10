@@ -18,16 +18,19 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
     OperationDefinition(opDef) {
       const usages = getRecursiveVariableUsagesWithRelayInfo(context, opDef)
 
+      const errors = Object.create(null)
+
       usages.forEach(usage => {
         const varName = usage.node.name.value
         if (!usage.variableDefinition) {
           const location = [...(!usage.usingFragmentName ? [usage.node] : []), opDef]
-          context.reportError(
-            new GraphQLError(
-              undefinedVarMessage(varName, opDef.name && opDef.name.value, usage.usingFragmentName),
-              location
-            )
-          )
+          const errorStr = undefinedVarMessage(varName, opDef.name && opDef.name.value, usage.usingFragmentName)
+          if (!errors[errorStr]) {
+            if (usage.usingFragmentName) {
+              errors[errorStr] = true
+            }
+            context.reportError(new GraphQLError(errorStr, location))
+          }
         }
       })
     },
