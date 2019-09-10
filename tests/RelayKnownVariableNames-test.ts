@@ -71,7 +71,7 @@ describe(RelayKnownVariableNames, () => {
     expect(errors).toHaveLength(1)
     expect(errors).toContainEqual(
       expect.objectContaining({
-        message: 'Variable "$shouldInclude" is not defined by operation "MyQuery", it is being used by "MyFragment".',
+        message: 'Variable "$shouldInclude" is used by fragment "MyFragment", but not defined by operation "MyQuery".',
       })
     )
   })
@@ -93,7 +93,7 @@ describe(RelayKnownVariableNames, () => {
     expect(errors).toHaveLength(1)
     expect(errors).toContainEqual(
       expect.objectContaining({
-        message: 'Variable "$shouldInclude" is not defined by operation "MyQuery", it is being used by "MyFragment".',
+        message: 'Variable "$shouldInclude" is used by fragment "MyFragment", but not defined by operation "MyQuery".',
       })
     )
   })
@@ -138,7 +138,8 @@ describe(RelayKnownVariableNames, () => {
     expect(errors).toHaveLength(1)
     expect(errors).toContainEqual(
       expect.objectContaining({
-        message: `Variable "$shouldInclude" is not defined by operation "MyOtherQuery", it is being used by "MyFragment".`,
+        message:
+          'Variable "$shouldInclude" is used by fragment "MyFragment", but not defined by operation "MyOtherQuery".',
       })
     )
   })

@@ -9,7 +9,7 @@ export function undefinedVarMessage(
 ): string {
   opName = !opName ? "unnamed operation" : opName
   return usingFragmentName
-    ? `Variable "$${varName}" is not defined by operation "${opName}", it is being used by "${usingFragmentName}".`
+    ? `Variable "$${varName}" is used by fragment "${usingFragmentName}", but not defined by operation "${opName}".`
     : `Variable "$${varName}" is not defined by operation "${opName}".`
 }
 
