@@ -30,6 +30,8 @@ export const {
   isTypeSubTypeOf,
   typeFromAST,
   GraphQLNonNull,
+  visitWithTypeInfo,
+  TypeInfo,
 } = mod.require("graphql") as typeof _GraphQL
 
 export const didYouMean = mod.require("graphql/jsutils/didYouMean").default as (suggestions: string[]) => string

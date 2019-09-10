@@ -1,200 +1,70 @@
-import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule, VariableNode, GraphQLInputType } from "graphql"
-import { isNonNullType, isTypeSubTypeOf, typeFromAST, GraphQLError, parseType } from "./dependencies"
-import { getArgumentDefinitions } from "./argumentDefinitions"
-import { getOperationsDefinedVariableDefinitionsForFragment } from "./operationsReferencingFragment"
+import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule } from "graphql"
+import { isNonNullType, isTypeSubTypeOf, GraphQLError } from "./dependencies"
+import { getRecursiveVariableUsagesWithRelayInfo, isFragmentDefinedVariable } from "./argumentDefinitions"
 
 export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVariablesInAllowedPosition(context) {
-  let varDefMap = Object.create(null)
-  var varUsageMap: { node: VariableNode; type: GraphQLInputType; defaultValue: ValueNode | undefined }[] = []
   return {
-    FragmentSpread(node) {
-      // Collect variable arguments used inside fragment spreads such that we know the type for these
-      // usages as well
-      if (node.directives == null) {
-        return
-      }
+    FragmentDefinition(fragmentDef) {
+      const schema = context.getSchema()
+      const varUsages = getRecursiveVariableUsagesWithRelayInfo(context, fragmentDef)
 
-      const argumentsDirective = node.directives.find(d => d.name.value === "arguments")
-      if (argumentsDirective == null || argumentsDirective.arguments == null) {
-        return
-      }
+      varUsages.forEach(usage => {
+        if (usage.variableDefinition) {
+          const varDefType = usage.variableDefinition.schemaType
+          const varDefDefault = usage.variableDefinition.defaultValue
+          const definitionNode = usage.variableDefinition.node
 
-      const fragmentSpreadDefinition = context.getFragment(node.name.value)
-
-      if (fragmentSpreadDefinition == null) {
-        return
-      }
-      const argumentDefinitions = getArgumentDefinitions(fragmentSpreadDefinition)
-
-      if (argumentDefinitions == null) {
-        return
-      }
-
-      argumentsDirective.arguments.forEach(arg => {
-        const value = arg.value
-        if (value.kind !== "Variable") {
-          return
+          const locationType = usage.type
+          const locationDefaultValue = usage.defaultValue
+          const varName = usage.node.name.value
+          if (
+            varDefType &&
+            locationType &&
+            definitionNode &&
+            !allowedVariableUsage(schema, varDefType, varDefDefault, locationType, locationDefaultValue)
+          ) {
+            // The diagnostics in vscode does seemingly not support errors in one file having a related location
+            // in a different file
+            const location = [...(!usage.usingFragmentName ? [definitionNode] : []), usage.node]
+            context.reportError(
+              new GraphQLError(badVarPosMessage(varName, varDefType.toString(), locationType.toString()), location)
+            )
+          }
         }
-        const argDef = argumentDefinitions.find(def => def.name.value === arg.name.value)
-
-        if (argDef == null || argDef.value.kind !== "ObjectValue") {
-          return
-        }
-
-        const typeField = argDef.value.fields.find(f => f.name.value === "type")
-        if (typeField == null || typeField.value.kind !== "StringValue") {
-          return
-        }
-        const defaultValue = argDef.value.fields.find(f => f.name.value === "defaultValue")
-        try {
-          const parsedType = parseType(typeField.value.value)
-          varUsageMap.push({
-            node: value,
-            type: typeFromAST(
-              context.getSchema(),
-              parsedType as any /* Not sure why this is needed */
-            ) as GraphQLInputType,
-            defaultValue: defaultValue == null ? undefined : defaultValue.value,
-          })
-        } catch (e) {}
       })
     },
-    FragmentDefinition: {
-      enter(fragmentDefinition) {
-        varDefMap = Object.create(null)
-        varUsageMap = []
-        const argumentDefinitions = getArgumentDefinitions(fragmentDefinition)
+    OperationDefinition(opDef) {
+      const schema = context.getSchema()
+      const varUsages = getRecursiveVariableUsagesWithRelayInfo(context, opDef)
 
-        if (argumentDefinitions) {
-          argumentDefinitions.forEach(def => {
-            if (def.value.kind !== "ObjectValue") {
-              return
-            }
-            const typeField = def.value.fields.find(f => f.name.value === "type")
-            if (typeField == null || typeField.value.kind !== "StringValue") {
-              return
-            }
-            const defaultValue = def.value.fields.find(f => f.name.value === "defaultValue")
-            try {
-              const parsedType = parseType(typeField.value.value)
-              varDefMap[def.name.value] = {
-                type: parsedType,
-                defaultValue: defaultValue == null ? undefined : defaultValue.value,
-                node: def,
-              }
-            } catch (e) {}
-          })
-        }
+      varUsages.forEach(usage => {
+        // We only check for variables that are not defined in the fragment itself
+        // as the visitor for the fragment definition will test for that
+        // thus giving errors for those variables even when the fragment is not
+        // used in an operation
+        if (usage.variableDefinition && !isFragmentDefinedVariable(usage.variableDefinition)) {
+          const varDefType = usage.variableDefinition.schemaType
+          const varDefDefault = usage.variableDefinition.defaultValue
+          const definitionNode = usage.variableDefinition.node
 
-        const operationDefinedVariables = getOperationsDefinedVariableDefinitionsForFragment(
-          context,
-          fragmentDefinition.name.value
-        )
-
-        Object.keys(operationDefinedVariables).forEach(varName => {
-          const def = operationDefinedVariables[varName]
-
-          if (varDefMap[varName]) {
-            return
-          }
-          varDefMap[varName] = {
-            type: def.type,
-            defaultValue: def.defaultValue,
-            node: def.node,
-          }
-        })
-      },
-      leave(fragmentDefinition) {
-        const usages = context.getVariableUsages(fragmentDefinition)
-
-        for (const { node, type, defaultValue } of usages) {
-          const varName = node.name.value
-          const varDef = varDefMap[varName]
-          if (varDef) {
-            let workingType
-            let workingDefault
-            if (type) {
-              workingType = type
-              workingDefault = defaultValue
-            } else {
-              const argUsage = varUsageMap.find(vu => vu.node === node)
-              if (argUsage) {
-                workingType = argUsage.type
-                workingDefault = argUsage.defaultValue
-              } else {
-                continue
-              }
-            }
-            // A var type is allowed if it is the same or more strict (e.g. is
-            // a subtype of) than the expected type. It can be more strict if
-            // the variable type is non-null when the expected type is nullable.
-            // If both are list types, the variable item type can be more strict
-            // than the expected item type (contravariant).
-            const schema = context.getSchema()
-            const varType = typeFromAST(schema, varDef.type)
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, workingType, workingDefault)) {
-              context.reportError(
-                new GraphQLError(badVarPosMessage(varName, varType.toString(), workingType.toString()), [
-                  varDef.node,
-                  node,
-                ])
-              )
-            }
+          const locationType = usage.type
+          const locationDefaultValue = usage.defaultValue
+          const varName = usage.node.name.value
+          if (
+            varDefType &&
+            locationType &&
+            definitionNode &&
+            !allowedVariableUsage(schema, varDefType, varDefDefault, locationType, locationDefaultValue)
+          ) {
+            // The diagnostics in vscode does seemingly not support errors in one file having a related location
+            // in a different file
+            const location = [...(!usage.usingFragmentName ? [usage.node] : []), opDef]
+            context.reportError(
+              new GraphQLError(badVarPosMessage(varName, varDefType.toString(), locationType.toString()), location)
+            )
           }
         }
-      },
-    },
-    OperationDefinition: {
-      enter() {
-        varDefMap = Object.create(null)
-        varUsageMap = []
-      },
-      leave(operation) {
-        const usages = context.getVariableUsages(operation)
-
-        for (const { node, type, defaultValue } of usages) {
-          const varName = node.name.value
-          const varDef = varDefMap[varName]
-          if (varDef) {
-            let workingType
-            let workingDefault
-            if (type) {
-              workingType = type
-              workingDefault = defaultValue
-            } else {
-              const argUsage = varUsageMap.find(vu => vu.node === node)
-              if (argUsage) {
-                workingType = argUsage.type
-                workingDefault = argUsage.defaultValue
-              } else {
-                continue
-              }
-            }
-            // A var type is allowed if it is the same or more strict (e.g. is
-            // a subtype of) than the expected type. It can be more strict if
-            // the variable type is non-null when the expected type is nullable.
-            // If both are list types, the variable item type can be more strict
-            // than the expected item type (contravariant).
-            const schema = context.getSchema()
-            const varType = typeFromAST(schema, varDef.type)
-            if (varType && !allowedVariableUsage(schema, varType, varDef.defaultValue, workingType, workingDefault)) {
-              context.reportError(
-                new GraphQLError(badVarPosMessage(varName, varType.toString(), workingType.toString()), [
-                  varDef.node,
-                  node,
-                ])
-              )
-            }
-          }
-        }
-      },
-    },
-    VariableDefinition(node) {
-      varDefMap[node.variable.name.value] = {
-        type: node.type,
-        node: node,
-        defaultValue: node.defaultValue,
-      }
+      })
     },
   }
 }

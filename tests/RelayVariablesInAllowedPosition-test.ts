@@ -15,6 +15,7 @@ type Query {
   foo: Foo
   node(id: ID!): Foo
   nodes(ids: [ID!]): [Foo]
+  conditionalNode(id: ID!, condition: Boolean!): Foo
 }
 `)
 
@@ -102,7 +103,7 @@ describe(RelayVariablesInAllowedPosition, () => {
     expect(errors.length).toBe(0)
   })
 
-  it("Disallows invalid fragments", () => {
+  it("Does validate standalone fragments", () => {
     const errors = validateDocuments(`
       fragment MyFragment on Query @argumentDefinitions(id: { type: "ID" }) {
         ... {
@@ -121,12 +122,52 @@ describe(RelayVariablesInAllowedPosition, () => {
       }
   `)
 
-    expect(errors.length).toBe(2)
+    expect(errors).toHaveLength(2)
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Variable "$id" of type "ID" used in position expecting type "ID!".' })
+      expect.objectContaining({
+        message: 'Variable "$id" of type "ID" used in position expecting type "ID!".',
+      })
     )
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Variable "$ids" of type "[ID]" used in position expecting type "[ID!]".' })
+      expect.objectContaining({
+        message: 'Variable "$ids" of type "[ID]" used in position expecting type "[ID!]".',
+      })
+    )
+  })
+
+  it("Does validate fragments that are being used", () => {
+    const errors = validateDocuments(`
+      query MyQuery {
+        ... MyFragment @arguments(id: "ID")
+        ... MyFragment2
+      }
+      fragment MyFragment on Query @argumentDefinitions(id: { type: "ID" }) {
+        ... {
+          node(id: $id) {
+            bar
+          }
+        }
+      }
+
+      fragment MyFragment2 on Query @argumentDefinitions(ids: { type: "[ID]" }) {
+        ... {
+          nodes(ids: $ids) {
+            bar
+          }
+        }
+      }
+  `)
+
+    expect(errors).toHaveLength(2)
+    expect(errors).toContainEqual(
+      expect.objectContaining({
+        message: 'Variable "$id" of type "ID" used in position expecting type "ID!".',
+      })
+    )
+    expect(errors).toContainEqual(
+      expect.objectContaining({
+        message: 'Variable "$ids" of type "[ID]" used in position expecting type "[ID!]".',
+      })
     )
   })
 
@@ -166,7 +207,59 @@ describe(RelayVariablesInAllowedPosition, () => {
 
     expect(errors.length).toBe(1)
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Variable "$id" of type "ID" used in position expecting type "ID!".' })
+      expect.objectContaining({
+        message: 'Variable "$id" of type "ID" used in position expecting type "ID!".',
+      })
+    )
+  })
+
+  it("Validates operation defined variables across multiple queries", () => {
+    const errors = validateDocuments(`
+      query MyQuery ($id: ID!, $shouldInclude: Boolean!) {
+        ... MyFragment
+      }
+      query MyOtherQuery ($id: ID!, $shouldInclude: Boolean) {
+        ... MyFragment
+      }
+      fragment MyFragment on Query {
+        ... {
+          conditionalNode(id: $id, condition: $shouldInclude){
+            bar
+          }
+        }
+      }
+    `)
+
+    expect(errors).toHaveLength(1)
+    expect(errors).toContainEqual(
+      expect.objectContaining({
+        message: 'Variable "$shouldInclude" of type "Boolean" used in position expecting type "Boolean!".',
+      })
+    )
+  })
+
+  it("Validates operation defined variables in incompatible ways across multiple queries", () => {
+    const errors = validateDocuments(`
+      query MyQuery ($id: ID!, $shouldInclude: Boolean!) {
+        ... MyFragment
+      }
+      query MyOtherQuery ($id: ID!, $shouldInclude: Int!) {
+        ... MyFragment
+      }
+      fragment MyFragment on Query {
+        ... {
+          conditionalNode(id: $id, condition: $shouldInclude){
+            bar
+          }
+        }
+      }
+    `)
+
+    expect(errors).toHaveLength(1)
+    expect(errors).toContainEqual(
+      expect.objectContaining({
+        message: 'Variable "$shouldInclude" of type "Int!" used in position expecting type "Boolean!".',
+      })
     )
   })
 })
