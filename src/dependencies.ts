@@ -31,6 +31,7 @@ export const {
   typeFromAST,
   GraphQLNonNull,
   visitWithTypeInfo,
+  isInputType,
   TypeInfo,
 } = mod.require("graphql") as typeof _GraphQL
 

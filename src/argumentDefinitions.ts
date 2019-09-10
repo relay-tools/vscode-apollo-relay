@@ -8,10 +8,9 @@ import {
   VariableNode,
   NameNode,
   GraphQLInputType,
-  isInputType,
   FragmentSpreadNode,
 } from "graphql"
-import { visit, parseType, typeFromAST, visitWithTypeInfo, TypeInfo } from "./dependencies"
+import { visit, parseType, typeFromAST, visitWithTypeInfo, TypeInfo, isInputType } from "./dependencies"
 import { VariableUsage, NodeWithSelectionSet } from "graphql/validation/ValidationContext"
 
 export function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitionNode) {
