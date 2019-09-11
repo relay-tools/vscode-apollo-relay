@@ -8,6 +8,7 @@ import { generateDirectivesFile } from "./generateDirectivesFile"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
 import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
+import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
@@ -46,6 +47,7 @@ export function generateConfig() {
         RelayKnownArgumentNames,
         RelayKnownVariableNames,
         RelayVariablesInAllowedPosition,
+        RelayArgumentsOfCorrectType,
         ...defaultValidationRules.filter(
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
