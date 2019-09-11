@@ -28,6 +28,7 @@ export const {
   parseType,
   visit,
   isNonNullType,
+  valueFromAST,
   isTypeSubTypeOf,
   typeFromAST,
   GraphQLNonNull,
