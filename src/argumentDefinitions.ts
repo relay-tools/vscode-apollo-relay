@@ -27,7 +27,7 @@ export function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitio
   return argumentDefinitionNodes
 }
 
-function getFragmentArgumentDefinitions(
+export function getFragmentArgumentDefinitions(
   context: ValidationContext,
   fragmentDefinitionNode: FragmentDefinitionNode
 ): { [varName: string]: VariableOrArgumentDefinition } {

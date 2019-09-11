@@ -23,6 +23,7 @@ export const { defaultValidationRules } = mod.require(
 ) as typeof _ApolloValidation
 
 export const {
+  BREAK,
   GraphQLError,
   parseType,
   visit,
