@@ -1,5 +1,5 @@
 import { ValidationRule, FragmentSpreadNode, valueFromAST, ASTNode } from "graphql"
-import { GraphQLError, visit } from "./dependencies"
+import { GraphQLError, visit, BREAK } from "./dependencies"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
 
 function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {
@@ -16,6 +16,7 @@ function hasVariables(node: ASTNode): boolean {
   visit(node, {
     Variable() {
       hasVars = true
+      return BREAK
     },
   })
   return hasVars
@@ -54,9 +55,10 @@ export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumen
 
         if (value === undefined) {
           context.reportError(
-            new GraphQLError(badValueMessage(fragmentDefinition.name.value, arg.name.value, schemaType.toString()), [
-              arg.value,
-            ])
+            new GraphQLError(
+              badValueMessage(fragmentDefinition.name.value, arg.name.value, schemaType.toString()),
+              arg.value
+            )
           )
         }
       })
@@ -65,5 +67,5 @@ export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumen
 }
 
 function badValueMessage(fragmentName: string, argName: string, argType: string): string {
-  return `Argument "${argName}" for fragment "${fragmentName}" is expecting type "${argType}".`
+  return `Argument "${argName}" for fragment "${fragmentName}" is expected to be of type "${argType}".`
 }

@@ -37,11 +37,13 @@ describe(RelayArgumentsOfCorrectType, () => {
 
     expect(errors).toHaveLength(2)
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Argument "intVal" for fragment "MyFragment" is expecting type "Int".' })
+      expect.objectContaining({
+        message: 'Argument "intVal" for fragment "MyFragment" is expected to be of type "Int".',
+      })
     )
     expect(errors).toContainEqual(
       expect.objectContaining({
-        message: 'Argument "reqStrVal" for fragment "MyFragment" is expecting type "String!".',
+        message: 'Argument "reqStrVal" for fragment "MyFragment" is expected to be of type "String!".',
       })
     )
   })
@@ -88,11 +90,13 @@ describe(RelayArgumentsOfCorrectType, () => {
 
     expect(errors).toHaveLength(2)
     expect(errors).toContainEqual(
-      expect.objectContaining({ message: 'Argument "intVal" for fragment "MyFragment" is expecting type "[Int]".' })
+      expect.objectContaining({
+        message: 'Argument "intVal" for fragment "MyFragment" is expected to be of type "[Int]".',
+      })
     )
     expect(errors).toContainEqual(
       expect.objectContaining({
-        message: 'Argument "reqStrVal" for fragment "MyFragment" is expecting type "[String!]!".',
+        message: 'Argument "reqStrVal" for fragment "MyFragment" is expected to be of type "[String!]!".',
       })
     )
   })
