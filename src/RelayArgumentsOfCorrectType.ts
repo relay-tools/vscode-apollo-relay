@@ -1,26 +1,7 @@
-import { ValidationRule, FragmentSpreadNode, ASTNode } from "graphql"
-import { GraphQLError, visit, BREAK, valueFromAST } from "./dependencies"
+import { ValidationRule } from "graphql"
+import { GraphQLError, valueFromAST } from "./dependencies"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
-
-function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {
-  return nodes.find(isFragmentSpread)
-}
-
-function isFragmentSpread(node: any): node is FragmentSpreadNode {
-  return node != null && node.kind === "FragmentSpread"
-}
-
-function hasVariables(node: ASTNode): boolean {
-  let hasVars = false
-
-  visit(node, {
-    Variable() {
-      hasVars = true
-      return BREAK
-    },
-  })
-  return hasVars
-}
+import { findFragmentSpreadParent, containsVariableNodes } from "./utils"
 
 export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumentsOfCorrectType(context) {
   return {
@@ -47,7 +28,7 @@ export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumen
 
         const schemaType = argDef.schemaType
 
-        if (hasVariables(arg.value)) {
+        if (containsVariableNodes(arg.value)) {
           return
         }
 

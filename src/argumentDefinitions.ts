@@ -8,10 +8,10 @@ import {
   VariableNode,
   NameNode,
   GraphQLInputType,
-  FragmentSpreadNode,
 } from "graphql"
 import { visit, parseType, typeFromAST, visitWithTypeInfo, TypeInfo, isInputType } from "./dependencies"
 import { VariableUsage, NodeWithSelectionSet } from "graphql/validation/ValidationContext"
+import { findFragmentSpreadParent } from "./utils"
 
 export function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitionNode) {
   let argumentDefinitionNodes: readonly ArgumentNode[] | undefined
@@ -79,14 +79,6 @@ export function getFragmentArgumentDefinitions(
     },
     {} as { [varName: string]: VariableOrArgumentDefinition }
   )
-}
-
-function isFragmentSpread(node: any): node is FragmentSpreadNode {
-  return node != null && node.kind === "FragmentSpread"
-}
-
-function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {
-  return nodes.find(isFragmentSpread)
 }
 
 function getVariableUsages(context: ValidationContext, nodeWithSelection: NodeWithSelectionSet): VariableUsage[] {
