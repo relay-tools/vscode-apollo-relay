@@ -3,12 +3,18 @@ import * as path from "path"
 import { ApolloConfigFormat } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql"
 import { getLanguagePlugin } from "relay-compiler/lib/RelayCompilerMain"
-import { defaultValidationRules, RelayConfig } from "./dependencies"
 import { generateDirectivesFile } from "./generateDirectivesFile"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
 import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
 import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
+import { defaultValidationRules } from "apollo-language-server/lib/errors/validation"
+
+import * as _RelayConfig from "relay-config"
+let RelayConfig: typeof _RelayConfig | null = null
+try {
+  RelayConfig = require("relay-config")
+} catch (_) {}
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",

@@ -3,10 +3,10 @@
     "strict": true,
     "lib": ["es6"],
     "module": "commonjs",
-    "declaration": true,
     "importHelpers": false,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "allowJs": true
   },
   "include": ["src/typings/*.d.ts", "src/**/*.ts", "tests/**/*.ts"]
 }

@@ -1,13 +1,18 @@
 import {
   FragmentSpreadNode,
+  GraphQLError,
   ValidationRule,
   FragmentDefinitionNode,
   ValidationContext,
   DirectiveNode,
   TypeNode,
   ObjectValueNode,
+  parseType,
+  visit,
 } from "graphql"
-import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
+import suggestionList from "graphql/jsutils/suggestionList"
+import didYouMean from "graphql/jsutils/didYouMean"
+import { defaultValidationRules } from "apollo-language-server/lib/errors/validation"
 import { getArgumentDefinitions } from "./argumentDefinitions"
 
 const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNames")!

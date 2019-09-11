@@ -1,5 +1,4 @@
-import { ValidationRule, FragmentSpreadNode, valueFromAST, ASTNode } from "graphql"
-import { GraphQLError, visit, BREAK } from "./dependencies"
+import { BREAK, GraphQLError, ValidationRule, visit, FragmentSpreadNode, valueFromAST, ASTNode } from "graphql"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
 
 function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {

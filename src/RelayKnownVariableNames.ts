@@ -1,5 +1,4 @@
-import { ValidationRule } from "graphql"
-import { GraphQLError } from "./dependencies"
+import { GraphQLError, ValidationRule } from "graphql"
 import { getRecursiveVariableUsagesWithRelayInfo } from "./argumentDefinitions"
 
 export function undefinedVarMessage(

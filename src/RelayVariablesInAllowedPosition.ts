@@ -1,5 +1,12 @@
-import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule } from "graphql"
-import { isNonNullType, isTypeSubTypeOf, GraphQLError } from "./dependencies"
+import {
+  isNonNullType,
+  isTypeSubTypeOf,
+  GraphQLError,
+  GraphQLSchema,
+  GraphQLType,
+  ValueNode,
+  ValidationRule,
+} from "graphql"
 import { getRecursiveVariableUsagesWithRelayInfo, isFragmentDefinedVariable } from "./argumentDefinitions"
 
 export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVariablesInAllowedPosition(context) {
