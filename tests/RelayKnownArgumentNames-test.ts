@@ -143,6 +143,21 @@ describe(RelayKnownArgumentNames, () => {
       )
     })
 
+    it("validates that the defaultValue contains no variables", () => {
+      const errors = validateDocuments(`
+        fragment FragmentWithArguments on Foo @argumentDefinitions(
+          argumentWithTypeAsLiteral: { type: "Foo", defaultValue: [$myVar] }
+        ) {
+          bar
+        }
+      `)
+      expect(errors).toContainEqual(
+        expect.objectContaining({
+          message: `Value for "type" in argument definition metadata must be specified as string literal.`,
+        })
+      )
+    })
+
     it("validates that the type is valid", () => {
       const errors = validateDocuments(`
         fragment FragmentWithArguments on Foo @argumentDefinitions(

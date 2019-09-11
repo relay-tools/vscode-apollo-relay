@@ -9,6 +9,7 @@ import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
 import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
 import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
+import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
@@ -48,6 +49,7 @@ export function generateConfig() {
         RelayKnownVariableNames,
         RelayVariablesInAllowedPosition,
         RelayArgumentsOfCorrectType,
+        RelayDefaultValueOfCorrectType,
         ...defaultValidationRules.filter(
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),

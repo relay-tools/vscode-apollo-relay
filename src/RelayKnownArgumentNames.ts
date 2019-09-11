@@ -9,6 +9,7 @@ import {
 } from "graphql"
 import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
 import { getArgumentDefinitions } from "./argumentDefinitions"
+import { containsVariableNodes } from "./utils"
 
 const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNames")!
 
@@ -76,8 +77,8 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
               new GraphQLError(`Unknown key "${name}" in argument definition metadata.`, fieldNode.name)
             )
           }
+          const valueNode = fieldNode.value
           if (name === "type") {
-            const valueNode = fieldNode.value
             if (valueNode.kind !== "StringValue") {
               context.reportError(
                 new GraphQLError(
@@ -105,6 +106,15 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
                   )
                 }
               }
+            }
+          } else if (name === "defaultValue") {
+            if (containsVariableNodes(fieldNode.value)) {
+              context.reportError(
+                new GraphQLError(
+                  `defaultValue contains variables for argument ${argumentNode.name.value} in argument definition metadata.`,
+                  valueNode
+                )
+              )
             }
           }
         })
