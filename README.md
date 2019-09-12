@@ -43,16 +43,18 @@ const {
 } = require("vscode-apollo-relay").generateConfig()
 
 module.exports = {
-  ...config,
-  service: {
-    ...config.service,
-    localSchemaFile: "./path/to/schema.graphql",
-  },
-  includes: [
-    directivesFile,
-    path.join("./path/to/source", includesGlobPattern(["js", "jsx"]))
-  ],
-  excludes: ["./path/to/exclude"],
+  client: {
+    ...config.client,
+    service: {
+      ...config.client.service,
+      localSchemaFile: "./path/to/schema.graphql",
+    },
+    includes: [
+      directivesFile,
+      path.join("./path/to/source", includesGlobPattern(["js", "jsx"]))
+    ],
+    excludes: ["./path/to/exclude"],
+  }
 }
 ```
 
