@@ -1,5 +1,12 @@
-import { ValidationRule, GraphQLOutputType, FieldNode, SelectionSetNode } from "graphql"
-import { getNullableType, GraphQLObjectType, GraphQLError } from "./dependencies"
+import {
+  ValidationRule,
+  GraphQLOutputType,
+  FieldNode,
+  SelectionSetNode,
+  FragmentDefinitionNode,
+  DirectiveNode,
+} from "graphql"
+import { getNullableType, GraphQLObjectType, GraphQLError, visit } from "./dependencies"
 
 function isConnectionType(type: GraphQLOutputType): boolean {
   const nullableType = getNullableType(type)
@@ -11,8 +18,25 @@ function isConnectionType(type: GraphQLOutputType): boolean {
   return nullableType.name.endsWith("Connection")
 }
 
-function hasConnectionDirective(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.directives && fieldNode.directives.find(d => d.name.value === "connection"))
+function getConnectionDirective(fieldNode: FieldNode): { key: string | null; directive: DirectiveNode } | null {
+  const directive = fieldNode.directives && fieldNode.directives.find(d => d.name.value === "connection")
+
+  if (!directive) {
+    return null
+  }
+
+  const keyArgument = directive.arguments && directive.arguments.find(arg => arg.name.value === "key")
+  if (!keyArgument || keyArgument.value.kind !== "StringValue") {
+    return {
+      key: null,
+      directive: directive,
+    }
+  }
+
+  return {
+    key: keyArgument.value.value,
+    directive: directive,
+  }
 }
 
 function hasFirstArgument(fieldNode: FieldNode): boolean {
@@ -31,41 +55,111 @@ function hasBeforeArgument(fieldNode: FieldNode): boolean {
   return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "before"))
 }
 
-function getPageInfoSelection(fieldNode: FieldNode): SelectionSetNode | null {
-  if (!fieldNode.selectionSet) {
-    return null
-  }
-
-  const selection = fieldNode.selectionSet.selections.find(
-    s => s.kind === "Field" && !s.alias && s.name.value === "pageInfo"
+function rollupFieldsInfo(fieldsInfo: PaginationFields[]): PaginationFields {
+  return fieldsInfo.reduce(
+    (carry, el) => {
+      carry.hasNextPage = carry.hasNextPage || el.hasNextPage
+      carry.hasPreviousPage = carry.hasPreviousPage || el.hasPreviousPage
+      carry.endCursor = carry.endCursor || el.endCursor
+      carry.startCursor = carry.startCursor || el.startCursor
+      return carry
+    },
+    {
+      hasNextPage: false,
+      hasPreviousPage: false,
+      endCursor: false,
+      startCursor: false,
+    }
   )
-  if (!selection || selection.kind !== "Field" || !selection.selectionSet) {
-    return null
-  }
-
-  return selection.selectionSet
 }
 
-function hasForwardConnectionPageInfoFields(selectionSet: SelectionSetNode): boolean {
-  const endCursorField = selectionSet.selections.find(
-    s => s.kind === "Field" && !s.alias && s.name.value === "endCursor"
-  )
-  const hasNextPageField = selectionSet.selections.find(
-    s => s.kind === "Field" && !s.alias && s.name.value === "hasNextPage"
-  )
+export function connectionSelectionSetPaginationInfo(
+  getFragment: (name: string) => FragmentDefinitionNode | null | undefined,
+  selectionSetNode: SelectionSetNode
+): PaginationFields {
+  const fieldsInfo: PaginationFields[] = []
 
-  return !!(endCursorField && hasNextPageField)
+  visit(selectionSetNode, {
+    SelectionSet(selectionSet) {
+      if (selectionSet !== selectionSetNode) {
+        // Don't recurse into other selection sets
+        return false
+      }
+    },
+    InlineFragment(inlineFragment) {
+      fieldsInfo.push(connectionSelectionSetPaginationInfo(getFragment, inlineFragment.selectionSet))
+      return false
+    },
+    Field(fieldNode) {
+      if (fieldNode.name.value === "pageInfo" && fieldNode.selectionSet) {
+        fieldsInfo.push(pageInfoSelectionSetPaginationInfo(getFragment, fieldNode.selectionSet))
+        return false
+      }
+    },
+    FragmentSpread(fragmentSpread) {
+      const fragmentDefinitionNode = getFragment(fragmentSpread.name.value)
+      if (fragmentDefinitionNode) {
+        fieldsInfo.push(connectionSelectionSetPaginationInfo(getFragment, fragmentDefinitionNode.selectionSet))
+      }
+      return false
+    },
+  })
+  return rollupFieldsInfo(fieldsInfo)
 }
 
-function hasBackwardConnectionPageInfoFields(selectionSet: SelectionSetNode): boolean {
-  const startCursorField = selectionSet.selections.find(
-    s => s.kind === "Field" && !s.alias && s.name.value === "startCursor"
-  )
-  const hasPreviousPageField = selectionSet.selections.find(
-    s => s.kind === "Field" && !s.alias && s.name.value === "hasPreviousPage"
-  )
+interface PaginationFields {
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  startCursor: boolean
+  endCursor: boolean
+}
 
-  return !!(startCursorField && hasPreviousPageField)
+function pageInfoSelectionSetPaginationInfo(
+  getFragment: (name: string) => FragmentDefinitionNode | null | undefined,
+  selectionSetNode: SelectionSetNode
+): PaginationFields {
+  const fields: PaginationFields = {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: false,
+    endCursor: false,
+  }
+  const nestedFieldsInfo: PaginationFields[] = []
+
+  visit(selectionSetNode, {
+    SelectionSet(selectionSet) {
+      if (selectionSet !== selectionSetNode) {
+        // Don't recurse into other selection sets
+        return false
+      }
+    },
+    InlineFragment(inlineFragment) {
+      nestedFieldsInfo.push(pageInfoSelectionSetPaginationInfo(getFragment, inlineFragment.selectionSet))
+      return false
+    },
+    Field(fieldNode) {
+      if (fieldNode.name.value === "startCursor") {
+        fields.startCursor = true
+      }
+      if (fieldNode.name.value === "endCursor") {
+        fields.endCursor = true
+      }
+      if (fieldNode.name.value === "hasPreviousPage") {
+        fields.hasPreviousPage = true
+      }
+      if (fieldNode.name.value === "hasNextPage") {
+        fields.hasNextPage = true
+      }
+    },
+    FragmentSpread(fragmentSpread) {
+      const fragmentDefinitionNode = getFragment(fragmentSpread.name.value)
+      if (fragmentDefinitionNode) {
+        nestedFieldsInfo.push(pageInfoSelectionSetPaginationInfo(getFragment, fragmentDefinitionNode.selectionSet))
+      }
+      return false
+    },
+  })
+  return rollupFieldsInfo([fields, ...nestedFieldsInfo])
 }
 
 export const RelayRequiredPageInfoFields: ValidationRule = function RelayRequiredPageInfoFields(context) {
@@ -79,42 +173,58 @@ export const RelayRequiredPageInfoFields: ValidationRule = function RelayRequire
         if (!type || !isConnectionType(type)) {
           return
         }
-        if (!hasConnectionDirective(fieldNode)) {
+        const connectionDirective = getConnectionDirective(fieldNode)
+        if (!connectionDirective) {
           return
         }
 
         const isForwardConnection = hasFirstArgument(fieldNode) && hasAfterArgument(fieldNode)
         const isBackwardConnection = hasLastArgument(fieldNode) && hasBeforeArgument(fieldNode)
-
-        const pageInfoSelection = getPageInfoSelection(fieldNode)
-
         const selectionName = fieldNode.alias || fieldNode.name
 
-        if (!pageInfoSelection) {
-          context.reportError(
-            new GraphQLError(`Missing pageInfo selection on connection "${selectionName.value}".`, [fieldNode])
-          )
-          return
+        const paginationFields = connectionSelectionSetPaginationInfo(
+          name => context.getFragment(name),
+          fieldNode.selectionSet
+        )
+
+        const connectionName = connectionDirective.key || selectionName
+
+        if (isForwardConnection) {
+          if (!paginationFields.hasNextPage) {
+            context.reportError(
+              new GraphQLError(
+                `Missing pageInfo.hasNextPage field on connection "${connectionName}".`,
+                connectionDirective.directive
+              )
+            )
+          }
+          if (!paginationFields.endCursor) {
+            context.reportError(
+              new GraphQLError(
+                `Missing pageInfo.endCursor field on connection "${connectionName}".`,
+                connectionDirective.directive
+              )
+            )
+          }
         }
 
-        if (isForwardConnection && !hasForwardConnectionPageInfoFields(pageInfoSelection)) {
-          context.reportError(
-            new GraphQLError(
-              `Missing forward pageInfo fields "hasNextPage" and "endCursor" for connection "${selectionName.value}".`,
-              [fieldNode]
+        if (isBackwardConnection) {
+          if (!paginationFields.hasPreviousPage) {
+            context.reportError(
+              new GraphQLError(
+                `Missing pageInfo.hasPreviousPage field on connection "${connectionName}".`,
+                connectionDirective.directive
+              )
             )
-          )
-          return
-        }
-
-        if (isBackwardConnection && !hasBackwardConnectionPageInfoFields(pageInfoSelection)) {
-          context.reportError(
-            new GraphQLError(
-              `Missing backward pageInfo fields "hasPreviousPage" and "startCursor" for connection "${selectionName.value}".`,
-              [fieldNode]
+          }
+          if (!paginationFields.startCursor) {
+            context.reportError(
+              new GraphQLError(
+                `Missing pageInfo.startCursor field on connection "${connectionName}".`,
+                connectionDirective.directive
+              )
             )
-          )
-          return
+          }
         }
       },
     },
