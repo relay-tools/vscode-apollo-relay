@@ -10,7 +10,7 @@ import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
 import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
 import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
 import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
-import { RelayRequiredPageInfoFields } from "./RelayRequiredPageInfoFields"
+import { RelayCompatRequiredPageInfoFields } from "./RelayCompatRequiredPageInfoFields"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
@@ -32,12 +32,14 @@ function loadRelayConfig() {
   }
 }
 
-export function generateConfig() {
+export function generateConfig(compat: boolean = false) {
   const relayConfig = loadRelayConfig()
 
   const languagePlugin = getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
   const directivesFile = generateDirectivesFile()
   const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
+
+  const compatOnlyRules = compat ? [RelayCompatRequiredPageInfoFields] : []
 
   const config: ApolloConfigFormat = {
     client: {
@@ -51,7 +53,7 @@ export function generateConfig() {
         RelayVariablesInAllowedPosition,
         RelayArgumentsOfCorrectType,
         RelayDefaultValueOfCorrectType,
-        RelayRequiredPageInfoFields,
+        ...compatOnlyRules,
         ...defaultValidationRules.filter(
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),

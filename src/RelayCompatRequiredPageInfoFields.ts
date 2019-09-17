@@ -162,7 +162,7 @@ function pageInfoSelectionSetPaginationInfo(
   return rollupFieldsInfo([fields, ...nestedFieldsInfo])
 }
 
-export const RelayRequiredPageInfoFields: ValidationRule = function RelayRequiredPageInfoFields(context) {
+export const RelayCompatRequiredPageInfoFields: ValidationRule = function RelayCompatRequiredPageInfoFields(context) {
   return {
     Field: {
       enter(fieldNode) {

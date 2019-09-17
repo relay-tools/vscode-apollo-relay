@@ -1,4 +1,7 @@
-import { RelayRequiredPageInfoFields, connectionSelectionSetPaginationInfo } from "../src/RelayRequiredPageInfoFields"
+import {
+  RelayCompatRequiredPageInfoFields,
+  connectionSelectionSetPaginationInfo,
+} from "../src/RelayCompatRequiredPageInfoFields"
 import { parse, buildSchema, validate, DocumentNode } from "graphql"
 import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
@@ -34,10 +37,10 @@ type Query {
 `)
 
 function validateDocuments(source: string) {
-  return validate(schema, parse(source), [RelayRequiredPageInfoFields])
+  return validate(schema, parse(source), [RelayCompatRequiredPageInfoFields])
 }
 
-describe(RelayRequiredPageInfoFields, () => {
+describe(RelayCompatRequiredPageInfoFields, () => {
   describe(connectionSelectionSetPaginationInfo, () => {
     const pageInfoStartCursor = parse(`fragment PageInfoStartCursor on PageInfo {
       startCursor
