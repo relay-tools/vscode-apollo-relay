@@ -32,6 +32,9 @@ function loadRelayConfig() {
 }
 
 function getInputExtensions(relayConfig: ReturnType<typeof loadRelayConfig>) {
+  if (!RelayCompilerMain) {
+    console.log("Unable to load relay-compiler, so `includes` may need manual configuration.")
+  }
   const languagePlugin =
     RelayCompilerMain && RelayCompilerMain.getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
   return languagePlugin ? languagePlugin.inputExtensions : ["js", "jsx"]
