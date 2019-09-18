@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.1...v1.4.2) (2019-09-18)
+
+
+### Bug Fixes
+
+* Actually be compatible with relay v6 ([065ff0a](https://github.com/relay-tools/vscode-apollo-relay/commit/065ff0a))
+
 ### [1.4.1](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.0...v1.4.1) (2019-09-18)
 
 
