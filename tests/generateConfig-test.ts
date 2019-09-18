@@ -1,5 +1,5 @@
 import { generateConfig } from "../src/generateConfig"
-import { Config } from "relay-compiler/lib/RelayCompilerMain"
+import { Config } from "relay-compiler/lib/bin/RelayCompilerMain"
 import { LocalServiceConfig } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql/validation"
 
