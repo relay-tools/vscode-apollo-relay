@@ -7,7 +7,7 @@
 import * as _ApolloValidation from "apollo-language-server/lib/errors/validation"
 import * as _GraphQL from "graphql"
 import * as _RelayConfig from "relay-config"
-import * as _RelayCompilerMain from "relay-compiler/bin/RelayCompilerMain"
+import * as _RelayCompilerMain from "relay-compiler/lib/bin/RelayCompilerMain"
 
 let mod = module
 if (typeof jest === "undefined") {
@@ -56,7 +56,7 @@ export const RelayConfig = relayConfigMod
 let relayCompilerMainMod: typeof _RelayCompilerMain | null = null
 try {
   // relay-compiler v6
-  relayCompilerMainMod = require("relay-compiler/bin/RelayCompilerMain")
+  relayCompilerMainMod = require("relay-compiler/lib/bin/RelayCompilerMain")
 } catch (_) {
   try {
     // relay-compiler v5
