@@ -16,7 +16,12 @@ const DEFAULTS = {
   src: "./src",
 }
 
-const ValidationRulesToExcludeForRelay = ["KnownArgumentNames", "NoUndefinedVariables", "VariablesInAllowedPosition"]
+const ValidationRulesToExcludeForRelay = [
+  "KnownArgumentNames",
+  "NoUndefinedVariables",
+  "VariablesInAllowedPosition",
+  "NoMissingClientDirectives",
+]
 
 function loadRelayConfig() {
   if (!RelayConfig) {
