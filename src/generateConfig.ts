@@ -2,8 +2,7 @@ import * as path from "path"
 
 import { ApolloConfigFormat } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql"
-import { getLanguagePlugin } from "relay-compiler/lib/RelayCompilerMain"
-import { defaultValidationRules, RelayConfig } from "./dependencies"
+import { defaultValidationRules, RelayConfig, RelayCompilerMain } from "./dependencies"
 import { generateDirectivesFile } from "./generateDirectivesFile"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
@@ -32,14 +31,19 @@ function loadRelayConfig() {
   }
 }
 
+function getInputExtensions(relayConfig: ReturnType<typeof loadRelayConfig>) {
+  const languagePlugin =
+    RelayCompilerMain && RelayCompilerMain.getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
+  return languagePlugin ? languagePlugin.inputExtensions : ["js", "jsx"]
+}
+
 export function generateConfig(compat: boolean = false) {
   const relayConfig = loadRelayConfig()
-
-  const languagePlugin = getLanguagePlugin((relayConfig && relayConfig.language) || "javascript")
+  const extensions = getInputExtensions(relayConfig)
   const directivesFile = generateDirectivesFile()
-  const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
-
   const compatOnlyRules = compat ? [RelayCompatRequiredPageInfoFields] : []
+
+  const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
 
   const config: ApolloConfigFormat = {
     client: {
@@ -58,10 +62,7 @@ export function generateConfig(compat: boolean = false) {
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
       ],
-      includes: [
-        directivesFile,
-        path.join((relayConfig || DEFAULTS).src, includesGlobPattern(languagePlugin.inputExtensions)),
-      ],
+      includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern(extensions))],
       excludes: relayConfig ? relayConfig.exclude : [],
       tagName: "graphql",
     },

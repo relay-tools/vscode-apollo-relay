@@ -2,7 +2,7 @@ declare module "relay-compiler" {
   const IRTransforms: any
 }
 
-declare module "relay-compiler/lib/RelayCompilerMain" {
+declare module "relay-compiler/bin/RelayCompilerMain" {
   type PluginInitializer = () => PluginInterface
 
   interface PluginInterface {
