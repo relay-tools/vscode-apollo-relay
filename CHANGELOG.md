@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.3](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.2...v1.4.3) (2019-09-24)
+
+
+### Bug Fixes
+
+* Ensure Apollo NoMissingClientDirectives rule is never used ([06b312b](https://github.com/relay-tools/vscode-apollo-relay/commit/06b312b))
+
 ### [1.4.2](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.1...v1.4.2) (2019-09-18)
 
 
