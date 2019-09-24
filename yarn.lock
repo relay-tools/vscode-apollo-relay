@@ -726,6 +726,26 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.4.tgz#64db61e0359eb5a8d99b55e05c729f130a678b04"
   integrity sha512-W0+n1Y+gK/8G2P/piTkBBN38Qc5Q1ZSO6B5H3QmPCUewaiXOo2GCAWZ4ElZCcNhjJuBSUSLGFUJnmlCn5+nxOQ==
 
+"@types/relay-compiler@*", "@types/relay-compiler@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@types/relay-compiler/-/relay-compiler-6.0.1.tgz#c33dace63e70d33ecf932bfe6abe911b71c9839c"
+  integrity sha512-to0ntZAGmgQanFpBQHOuvpULJFATD5z7We+H2gM7QPNzK/0P4jScweBmTGKSd8idnFfemPdXbVNEfKL9Mjd26g==
+  dependencies:
+    "@types/relay-runtime" "*"
+    graphql "^14.5.3"
+
+"@types/relay-config@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@types/relay-config/-/relay-config-6.0.0.tgz#eedd2d021774f852254c4fd878cd53ee02777e41"
+  integrity sha512-cdYLavCAMrRxuHE67zQlWZjm9du6VBJ0KE6afMmuHa351Gv+mUwTZgPWooOwkhQSl/QdS5YHSgWZVFzr83A7Dw==
+  dependencies:
+    "@types/relay-compiler" "*"
+
+"@types/relay-runtime@*":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@types/relay-runtime/-/relay-runtime-6.0.0.tgz#40c3548bec73d876be6de84fb4d2dd43ab19131f"
+  integrity sha512-KutuTFGau+gM9igWXlIwrL1HXerd1Ui20392OKSTU5CVEDoLx+d6qc6oMDFCm/3PuhyZ3Hc7vFVwMnYlwQSVJg==
+
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
@@ -2383,6 +2403,13 @@ graphql-tag@^2.10.1:
   version "14.5.6"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.5.6.tgz#3fa12173b50e6ccdef953c31c82f37c50ef58bec"
   integrity sha512-zJ6Oz8P1yptV4O4DYXdArSwvmirPetDOBnGFRBl0zQEC68vNW3Ny8qo8VzMgfr+iC8PKiRYJ+f2wub41oDCoQg==
+  dependencies:
+    iterall "^1.2.2"
+
+graphql@^14.5.3:
+  version "14.5.7"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-14.5.7.tgz#8646a3fcc07922319cc3967eba4a64b32929f77f"
+  integrity sha512-as410RMJSUFqF8RcH2QWxZ5ioqHzsH9VWnWbaU+UnDXJ/6azMDIYPrtXCBPXd8rlunEVb7W8z6fuUnNHMbFu9A==
   dependencies:
     iterall "^1.2.2"
 
