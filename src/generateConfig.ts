@@ -1,5 +1,4 @@
 import * as path from "path"
-
 import { ApolloConfigFormat } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql"
 import { defaultValidationRules, RelayConfig, RelayCompilerMain } from "./dependencies"
@@ -53,6 +52,12 @@ export function generateConfig(compat: boolean = false) {
 
   const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
 
+  const configInclude = relayConfig ? relayConfig.include : undefined
+  const src = (relayConfig || DEFAULTS).src
+  const includes = configInclude
+    ? configInclude.map(i => path.join(src, i))
+    : [path.join((relayConfig || DEFAULTS).src, includesGlobPattern(extensions))]
+
   const config: ApolloConfigFormat = {
     client: {
       service: {
@@ -70,8 +75,8 @@ export function generateConfig(compat: boolean = false) {
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
         ),
       ],
-      includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern(extensions))],
-      excludes: relayConfig ? relayConfig.exclude : [],
+      includes: [directivesFile, ...includes],
+      excludes: relayConfig && relayConfig.exclude ? relayConfig.exclude.map(ex => path.join(src, ex)) : [],
       tagName: "graphql",
     },
   }
