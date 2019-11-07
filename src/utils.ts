@@ -1,5 +1,13 @@
-import { ASTNode, FragmentSpreadNode, FragmentDefinitionNode, GraphQLType } from "graphql"
-import { visit, BREAK, GraphQLNonNull } from "./dependencies"
+import {
+  ASTNode,
+  FragmentSpreadNode,
+  FragmentDefinitionNode,
+  GraphQLType,
+  FieldNode,
+  DirectiveNode,
+  GraphQLOutputType,
+} from "graphql"
+import { visit, BREAK, GraphQLNonNull, getNullableType, GraphQLObjectType } from "./dependencies"
 
 export function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {
   return nodes.find(isFragmentSpread)
@@ -34,4 +42,35 @@ export function makeNonNullable(type: GraphQLType): GraphQLType {
     return new GraphQLNonNull(type)
   }
   return type
+}
+
+export function getConnectionDirective(fieldNode: FieldNode): { key: string | null; directive: DirectiveNode } | null {
+  const directive = fieldNode.directives && fieldNode.directives.find(d => d.name.value === "connection")
+
+  if (!directive) {
+    return null
+  }
+
+  const keyArgument = directive.arguments && directive.arguments.find(arg => arg.name.value === "key")
+  if (!keyArgument || keyArgument.value.kind !== "StringValue") {
+    return {
+      key: null,
+      directive: directive,
+    }
+  }
+
+  return {
+    key: keyArgument.value.value,
+    directive: directive,
+  }
+}
+
+export function isConnectionType(type: GraphQLOutputType): boolean {
+  const nullableType = getNullableType(type)
+
+  if (!(nullableType instanceof GraphQLObjectType)) {
+    return false
+  }
+
+  return nullableType.name.endsWith("Connection")
 }

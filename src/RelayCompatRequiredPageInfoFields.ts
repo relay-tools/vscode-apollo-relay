@@ -1,43 +1,6 @@
-import {
-  ValidationRule,
-  GraphQLOutputType,
-  FieldNode,
-  SelectionSetNode,
-  FragmentDefinitionNode,
-  DirectiveNode,
-} from "graphql"
-import { getNullableType, GraphQLObjectType, GraphQLError, visit } from "./dependencies"
-
-function isConnectionType(type: GraphQLOutputType): boolean {
-  const nullableType = getNullableType(type)
-
-  if (!(nullableType instanceof GraphQLObjectType)) {
-    return false
-  }
-
-  return nullableType.name.endsWith("Connection")
-}
-
-function getConnectionDirective(fieldNode: FieldNode): { key: string | null; directive: DirectiveNode } | null {
-  const directive = fieldNode.directives && fieldNode.directives.find(d => d.name.value === "connection")
-
-  if (!directive) {
-    return null
-  }
-
-  const keyArgument = directive.arguments && directive.arguments.find(arg => arg.name.value === "key")
-  if (!keyArgument || keyArgument.value.kind !== "StringValue") {
-    return {
-      key: null,
-      directive: directive,
-    }
-  }
-
-  return {
-    key: keyArgument.value.value,
-    directive: directive,
-  }
-}
+import { ValidationRule, FieldNode, SelectionSetNode, FragmentDefinitionNode } from "graphql"
+import { GraphQLError, visit } from "./dependencies"
+import { isConnectionType, getConnectionDirective } from "./utils"
 
 function hasFirstArgument(fieldNode: FieldNode): boolean {
   return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "first"))
