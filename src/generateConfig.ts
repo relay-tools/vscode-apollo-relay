@@ -10,6 +10,7 @@ import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPositi
 import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
 import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
 import { RelayCompatRequiredPageInfoFields } from "./RelayCompatRequiredPageInfoFields"
+import { RelayCompatMissingConnectionDirective } from "./RelayCompatMissingConnectionDirective"
 import { RelayNoUnusedArguments } from "./RelayNoUnusedArguments"
 
 const DEFAULTS = {
@@ -50,7 +51,7 @@ export function generateConfig(compat: boolean = false) {
   const relayConfig = loadRelayConfig()
   const extensions = getInputExtensions(relayConfig)
   const directivesFile = generateDirectivesFile()
-  const compatOnlyRules = compat ? [RelayCompatRequiredPageInfoFields] : []
+  const compatOnlyRules = compat ? [RelayCompatRequiredPageInfoFields, RelayCompatMissingConnectionDirective] : []
 
   const includesGlobPattern = (inputExtensions: string[]) => `**/*.{graphql,${inputExtensions.join(",")}}`
 
