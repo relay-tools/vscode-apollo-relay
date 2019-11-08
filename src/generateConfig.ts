@@ -11,6 +11,7 @@ import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
 import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
 import { RelayCompatRequiredPageInfoFields } from "./RelayCompatRequiredPageInfoFields"
 import { RelayCompatMissingConnectionDirective } from "./RelayCompatMissingConnectionDirective"
+import { RelayNoUnusedArguments } from "./RelayNoUnusedArguments"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
@@ -66,6 +67,7 @@ export function generateConfig(compat: boolean = false) {
         RelayVariablesInAllowedPosition,
         RelayArgumentsOfCorrectType,
         RelayDefaultValueOfCorrectType,
+        RelayNoUnusedArguments,
         ...compatOnlyRules,
         ...defaultValidationRules.filter(
           (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
