@@ -14,7 +14,6 @@ export function generateDirectivesFile() {
     ...IRTransforms.schemaExtensions,
     "directive @arguments on FRAGMENT_SPREAD",
     "directive @argumentDefinitions on FRAGMENT_DEFINITION",
-    "directive @__clientField(handle: String!) on FIELD"
   ]
   fs.writeFileSync(tempfile, extensions.join("\n"))
   return tempfile
