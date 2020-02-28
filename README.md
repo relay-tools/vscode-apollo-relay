@@ -1,3 +1,4 @@
+
 # vscode-apollo-relay
 
 [![npm](https://img.shields.io/npm/v/vscode-apollo-relay.svg)](https://www.npmjs.com/package/vscode-apollo-relay)
@@ -29,7 +30,19 @@ In your `apollo.config.js` file:
 
 ```js
 const { config } = require("vscode-apollo-relay").generateConfig()
+// If you want to debug the config, uncomment the following line
+// console.log(JSON.stringify(config))
+// You have to restart Visual Code after installing and check the output of Apollo GraphQL (next to the Terimal window)
 module.exports = config
+```
+
+If you  use [relay-config], don't forget to specify the language 
+```javascript
+// relay.config.js
+module.exports = {
+  ..............
+  language: 'typescript',
+}
 ```
 
 Or, if you don’t use [relay-config] and the default values don’t work for you:
