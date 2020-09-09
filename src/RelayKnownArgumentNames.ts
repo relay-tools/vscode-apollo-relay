@@ -11,7 +11,7 @@ import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestion
 import { getArgumentDefinitions } from "./argumentDefinitions"
 import { containsVariableNodes } from "./utils"
 
-const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNames")!
+const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNamesRule")!
 
 export const RelayKnownArgumentNames: ValidationRule = function RelayKnownArgumentNames(context) {
   const originalRuleVisitor = KnownArgumentNames(context)
