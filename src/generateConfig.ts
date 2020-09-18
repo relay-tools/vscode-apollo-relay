@@ -70,7 +70,7 @@ export function generateConfig(compat: boolean = false) {
         RelayNoUnusedArguments,
         ...compatOnlyRules,
         ...defaultValidationRules.filter(
-          (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
+          (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.some(name => rule.name.startsWith(name))
         ),
       ],
       includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern(extensions))],

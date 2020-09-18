@@ -27,13 +27,16 @@ describe(generateDirectivesFile, () => {
     })
     expect(directives.sort()).toMatchInlineSnapshot(`
       Array [
+        "DEPRECATED__relay_ignore_unused_variables_error",
+        "appendEdge",
         "argumentDefinitions",
         "arguments",
         "connection",
-        "connection_resolver",
+        "deleteRecord",
         "inline",
         "match",
         "module",
+        "prependEdge",
         "raw_response_type",
         "refetchable",
         "relay",
