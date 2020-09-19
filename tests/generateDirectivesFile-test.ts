@@ -1,6 +1,6 @@
-import { directivesFilename, generateDirectivesFile } from "../src/generateDirectivesFile"
-import { unlinkSync, existsSync, readFileSync } from "fs"
+import { existsSync, readFileSync, unlinkSync } from "fs"
 import { parse, visit } from "graphql"
+import { directivesFilename, generateDirectivesFile } from "../src/generateDirectivesFile"
 
 describe(generateDirectivesFile, () => {
   const tempfile = directivesFilename()

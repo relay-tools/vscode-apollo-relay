@@ -1,7 +1,8 @@
 {
   "rulesDirectory": ["tslint-plugin-prettier"],
-  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "extends": ["tslint:recommended"],
   "rules": {
+    "prettier": true,
     "arrow-parens": false,
     "interface-name": [true, "never-prefix"],
     "max-classes-per-file": false,

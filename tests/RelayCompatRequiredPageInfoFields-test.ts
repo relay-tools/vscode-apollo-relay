@@ -1,10 +1,10 @@
-import {
-  RelayCompatRequiredPageInfoFields,
-  connectionSelectionSetPaginationInfo,
-} from "../src/RelayCompatRequiredPageInfoFields"
-import { parse, buildSchema, validate, DocumentNode } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, DocumentNode, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import {
+  connectionSelectionSetPaginationInfo,
+  RelayCompatRequiredPageInfoFields,
+} from "../src/RelayCompatRequiredPageInfoFields"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

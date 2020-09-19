@@ -1,21 +1,21 @@
-import { ValidationRule, FieldNode, SelectionSetNode, FragmentDefinitionNode } from "graphql"
+import { FieldNode, FragmentDefinitionNode, SelectionSetNode, ValidationRule } from "graphql"
 import { GraphQLError, visit } from "./dependencies"
-import { isConnectionType, getConnectionDirective } from "./utils"
+import { getConnectionDirective, isConnectionType } from "./utils"
 
 function hasFirstArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "first"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "first"))
 }
 
 function hasLastArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "last"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "last"))
 }
 
 function hasAfterArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "after"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "after"))
 }
 
 function hasBeforeArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "before"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "before"))
 }
 
 function rollupFieldsInfo(fieldsInfo: PaginationFields[]): PaginationFields {
@@ -125,6 +125,7 @@ function pageInfoSelectionSetPaginationInfo(
   return rollupFieldsInfo([fields, ...nestedFieldsInfo])
 }
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayCompatRequiredPageInfoFields: ValidationRule = function RelayCompatRequiredPageInfoFields(context) {
   return {
     Field: {
@@ -146,7 +147,7 @@ export const RelayCompatRequiredPageInfoFields: ValidationRule = function RelayC
         const selectionName = fieldNode.alias || fieldNode.name
 
         const paginationFields = connectionSelectionSetPaginationInfo(
-          name => context.getFragment(name),
+          (name) => context.getFragment(name),
           fieldNode.selectionSet
         )
 

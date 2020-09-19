@@ -1,6 +1,6 @@
 import { ValidationRule } from "graphql"
-import { GraphQLError } from "./dependencies"
 import { getRecursiveVariableUsagesWithRelayInfo } from "./argumentDefinitions"
+import { GraphQLError } from "./dependencies"
 
 export function undefinedVarMessage(
   varName: string,
@@ -13,6 +13,7 @@ export function undefinedVarMessage(
     : `Variable "$${varName}" is not defined by operation "${opName}".`
 }
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariableNames(context) {
   return {
     OperationDefinition(opDef) {
@@ -20,7 +21,7 @@ export const RelayKnownVariableNames: ValidationRule = function RelayKnownVariab
 
       const errors = Object.create(null)
 
-      usages.forEach(usage => {
+      usages.forEach((usage) => {
         const varName = usage.node.name.value
         if (!usage.variableDefinition) {
           const location = [...(!usage.usingFragmentName ? [usage.node] : []), opDef]

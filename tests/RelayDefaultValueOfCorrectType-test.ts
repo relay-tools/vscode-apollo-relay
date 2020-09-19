@@ -1,7 +1,7 @@
-import { RelayDefaultValueOfCorrectType } from "../src/RelayDefaultValueOfCorrectType"
-import { parse, buildSchema, validate } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import { RelayDefaultValueOfCorrectType } from "../src/RelayDefaultValueOfCorrectType"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

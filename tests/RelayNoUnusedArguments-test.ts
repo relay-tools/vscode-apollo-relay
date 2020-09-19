@@ -1,7 +1,7 @@
-import { RelayNoUnusedArguments } from "../src/RelayNoUnusedArguments"
-import { parse, buildSchema, validate } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import { RelayNoUnusedArguments } from "../src/RelayNoUnusedArguments"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

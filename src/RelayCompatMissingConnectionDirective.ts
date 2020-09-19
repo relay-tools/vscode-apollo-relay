@@ -1,15 +1,16 @@
-import { ValidationRule, FieldNode } from "graphql"
-import { getConnectionDirective, isConnectionType } from "./utils"
+import { FieldNode, ValidationRule } from "graphql"
 import { GraphQLError } from "./dependencies"
+import { getConnectionDirective, isConnectionType } from "./utils"
 
 function hasAfterArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "after"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "after"))
 }
 
 function hasBeforeArgument(fieldNode: FieldNode): boolean {
-  return !!(fieldNode.arguments && fieldNode.arguments.find(arg => arg.name.value === "before"))
+  return !!(fieldNode.arguments && fieldNode.arguments.find((arg) => arg.name.value === "before"))
 }
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayCompatMissingConnectionDirective: ValidationRule = function RelayCompatMissingConnectionDirective(
   context
 ) {

@@ -1,14 +1,15 @@
-import { GraphQLSchema, GraphQLType, ValueNode, ValidationRule } from "graphql"
-import { isNonNullType, isTypeSubTypeOf, GraphQLError } from "./dependencies"
+import { GraphQLSchema, GraphQLType, ValidationRule, ValueNode } from "graphql"
 import { getRecursiveVariableUsagesWithRelayInfo, isFragmentDefinedVariable } from "./argumentDefinitions"
+import { GraphQLError, isNonNullType, isTypeSubTypeOf } from "./dependencies"
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVariablesInAllowedPosition(context) {
   return {
     FragmentDefinition(fragmentDef) {
       const schema = context.getSchema()
       const varUsages = getRecursiveVariableUsagesWithRelayInfo(context, fragmentDef)
 
-      varUsages.forEach(usage => {
+      varUsages.forEach((usage) => {
         if (usage.variableDefinition) {
           const varDefType = usage.variableDefinition.schemaType
           const varDefDefault = usage.variableDefinition.defaultValue
@@ -39,7 +40,7 @@ export const RelayVariablesInAllowedPosition: ValidationRule = function RelayVar
 
       const errors = Object.create(null)
 
-      varUsages.forEach(usage => {
+      varUsages.forEach((usage) => {
         // We only check for variables that are not defined in the fragment itself
         // as the visitor for the fragment definition will test for that
         // thus giving errors for those variables even when the fragment is not
