@@ -1,7 +1,7 @@
-import { RelayKnownVariableNames } from "../src/RelayKnownVariableNames"
-import { parse, buildSchema, validate } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import { RelayKnownVariableNames } from "../src/RelayKnownVariableNames"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

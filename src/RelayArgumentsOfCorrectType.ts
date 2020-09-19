@@ -1,8 +1,9 @@
 import { ValidationRule } from "graphql"
-import { GraphQLError, valueFromAST } from "./dependencies"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
-import { findFragmentSpreadParent, containsVariableNodes } from "./utils"
+import { GraphQLError, valueFromAST } from "./dependencies"
+import { containsVariableNodes, findFragmentSpreadParent } from "./utils"
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumentsOfCorrectType(context) {
   return {
     Directive(directive, _key, _parent, _path, ancestors) {
@@ -20,7 +21,7 @@ export const RelayArgumentsOfCorrectType: ValidationRule = function RelayArgumen
 
       const typedArguments = getFragmentArgumentDefinitions(context, fragmentDefinition)
 
-      directive.arguments.forEach(arg => {
+      directive.arguments.forEach((arg) => {
         const argDef = typedArguments[arg.name.value]
         if (!argDef || !argDef.schemaType) {
           return

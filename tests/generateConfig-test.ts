@@ -1,7 +1,7 @@
-import { generateConfig } from "../src/generateConfig"
-import { Config } from "relay-compiler/lib/bin/RelayCompilerMain"
 import { LocalServiceConfig } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql/validation"
+import { Config } from "relay-compiler/lib/bin/RelayCompilerMain"
+import { generateConfig } from "../src/generateConfig"
 
 jest.mock("cosmiconfig", () => () => ({
   searchSync: () => ({
@@ -46,7 +46,7 @@ describe(generateConfig, () => {
   it("excludes validation rules that are incompatible with Relay", () => {
     const config = generateConfig().config.client!
     const rules = config.validationRules as ValidationRule[]
-    expect(rules.map(({ name }) => name)).not.toContain("NoUndefinedVariables")
+    expect(rules.map(({ name }) => name)).not.toContain("NoUndefinedVariablesRule")
   })
 
   it("includes the RelayUnknownArgumentNames validation rule", () => {
@@ -57,7 +57,7 @@ describe(generateConfig, () => {
 
   it("specifies the relay-compiler directives dump to include", () => {
     const config = generateConfig().config.client!
-    expect(config.includes).toContainEqual(expect.stringMatching(/relay-compiler-directives-v\d\.\d\.\d/))
+    expect(config.includes).toContainEqual(expect.stringMatching(/relay-compiler-directives-v\d+\.\d+\.\d+/))
   })
 
   it.todo("specifies the source files to include with a different language plugin")

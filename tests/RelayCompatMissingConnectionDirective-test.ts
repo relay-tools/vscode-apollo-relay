@@ -1,7 +1,7 @@
-import { RelayCompatMissingConnectionDirective } from "../src/RelayCompatMissingConnectionDirective"
-import { parse, buildSchema, validate } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import { RelayCompatMissingConnectionDirective } from "../src/RelayCompatMissingConnectionDirective"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

@@ -1,16 +1,16 @@
 import {
-  FragmentDefinitionNode,
   ArgumentNode,
-  ValidationContext,
-  OperationDefinitionNode,
-  ValueNode,
-  TypeNode,
-  VariableNode,
-  NameNode,
+  FragmentDefinitionNode,
   GraphQLInputType,
+  NameNode,
+  OperationDefinitionNode,
+  TypeNode,
+  ValidationContext,
+  ValueNode,
+  VariableNode,
 } from "graphql"
-import { visit, parseType, typeFromAST, visitWithTypeInfo, TypeInfo, isInputType } from "./dependencies"
-import { VariableUsage, NodeWithSelectionSet } from "graphql/validation/ValidationContext"
+import { NodeWithSelectionSet, VariableUsage } from "graphql/validation/ValidationContext"
+import { isInputType, parseType, typeFromAST, TypeInfo, visit, visitWithTypeInfo } from "./dependencies"
 import { findFragmentSpreadParent } from "./utils"
 
 export function getArgumentDefinitions(fragmentDefinitionNode: FragmentDefinitionNode) {
@@ -36,49 +36,50 @@ export function getFragmentArgumentDefinitions(
     return {}
   }
 
-  return argDefs.reduce(
-    (carry, argDef) => {
-      const node = argDef.name
-      const name = argDef.name.value
+  return argDefs.reduce((carry, argDef) => {
+    const node = argDef.name
+    const name = argDef.name.value
 
-      let astTypeNode: TypeNode | undefined = undefined
-      let defaultValue: ValueNode | undefined = undefined
+    let astTypeNode: TypeNode | undefined
+    let defaultValue: ValueNode | undefined
 
-      if (argDef.value.kind === "ObjectValue") {
-        const typeField = argDef.value.fields.find(f => f.name.value === "type")
-        const defaultValueField = argDef.value.fields.find(f => f.name.value === "defaultValue")
+    if (argDef.value.kind === "ObjectValue") {
+      const typeField = argDef.value.fields.find((f) => f.name.value === "type")
+      const defaultValueField = argDef.value.fields.find((f) => f.name.value === "defaultValue")
 
-        if (typeField != null && typeField.value.kind === "StringValue") {
-          try {
-            astTypeNode = parseType(typeField.value.value)
-          } catch {}
-        }
-        if (defaultValueField != null) {
-          defaultValue = defaultValueField.value
-        }
-      }
-
-      let schemaType: GraphQLInputType | undefined = undefined
-      if (astTypeNode != null) {
+      if (typeField != null && typeField.value.kind === "StringValue") {
         try {
-          const type = typeFromAST(context.getSchema(), astTypeNode as any)
-          if (isInputType(type)) {
-            schemaType = type
-          }
-        } catch (e) {}
+          astTypeNode = parseType(typeField.value.value)
+        } catch {
+          // ignore
+        }
       }
-
-      carry[name] = {
-        node: node,
-        schemaType: schemaType,
-        typeNode: astTypeNode,
-        defaultValue: defaultValue,
+      if (defaultValueField != null) {
+        defaultValue = defaultValueField.value
       }
+    }
 
-      return carry
-    },
-    {} as { [varName: string]: VariableOrArgumentDefinition }
-  )
+    let schemaType: GraphQLInputType | undefined
+    if (astTypeNode != null) {
+      try {
+        const type = typeFromAST(context.getSchema(), astTypeNode as any)
+        if (isInputType(type)) {
+          schemaType = type
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    carry[name] = {
+      node,
+      schemaType,
+      typeNode: astTypeNode,
+      defaultValue,
+    }
+
+    return carry
+  }, {} as { [varName: string]: VariableOrArgumentDefinition })
 }
 
 function getVariableUsages(context: ValidationContext, nodeWithSelection: NodeWithSelectionSet): VariableUsage[] {
@@ -102,7 +103,7 @@ function getVariableUsages(context: ValidationContext, nodeWithSelection: NodeWi
         }
         const fragmentArguments = getFragmentArgumentDefinitions(context, fragmentDefinition)
 
-        directive.arguments.forEach(arg => {
+        directive.arguments.forEach((arg) => {
           const argumentName = arg.name.value
           const argumentValue = arg.value
           if (argumentValue.kind === "Variable") {
@@ -144,8 +145,8 @@ export interface VariableOrArgumentDefinition {
   defaultValue?: ValueNode
 }
 
-export function isFragmentDefinedVariable(VariableOrArgumentDefinition: VariableOrArgumentDefinition): boolean {
-  return VariableOrArgumentDefinition.node.kind === "Name"
+export function isFragmentDefinedVariable(variableOrArgumentDefinition: VariableOrArgumentDefinition): boolean {
+  return variableOrArgumentDefinition.node.kind === "Name"
 }
 
 export interface VariableUsageWithDefinition extends VariableUsage {
@@ -161,31 +162,30 @@ export function getRecursiveVariableUsagesWithRelayInfo(
     nodeWithSelectionSet.kind === "OperationDefinition"
       ? nodeWithSelectionSet.variableDefinitions == null
         ? {}
-        : nodeWithSelectionSet.variableDefinitions.reduce(
-            (carry, varDef) => {
-              const variableName = varDef.variable.name.value
-              carry[variableName] = {
-                node: varDef.variable,
-                defaultValue: varDef.defaultValue,
-                typeNode: varDef.type,
+        : nodeWithSelectionSet.variableDefinitions.reduce((carry, varDef) => {
+            const variableName = varDef.variable.name.value
+            carry[variableName] = {
+              node: varDef.variable,
+              defaultValue: varDef.defaultValue,
+              typeNode: varDef.type,
+            }
+            try {
+              const schemaType = typeFromAST(schema, varDef.type as any)
+              if (isInputType(schemaType)) {
+                carry[variableName].schemaType = schemaType
               }
-              try {
-                const schemaType = typeFromAST(schema, varDef.type as any)
-                if (isInputType(schemaType)) {
-                  carry[variableName].schemaType = schemaType
-                }
-              } catch (e) {}
-              return carry
-            },
-            {} as { [varName: string]: VariableOrArgumentDefinition }
-          )
+            } catch {
+              // ignore
+            }
+            return carry
+          }, {} as { [varName: string]: VariableOrArgumentDefinition })
       : getFragmentArgumentDefinitions(context, nodeWithSelectionSet)
   const fragments =
     nodeWithSelectionSet.kind === "OperationDefinition"
       ? context.getRecursivelyReferencedFragments(nodeWithSelectionSet)
       : []
 
-  const rootUsages = getVariableUsages(context, nodeWithSelectionSet).map(usage => {
+  const rootUsages = getVariableUsages(context, nodeWithSelectionSet).map((usage) => {
     const newUsage = { ...usage, usingFragmentName: null } as VariableUsageWithDefinition
     const varName = usage.node.name.value
     if (rootVariables[varName]) {
@@ -199,7 +199,7 @@ export function getRecursiveVariableUsagesWithRelayInfo(
 
     const framgentUsages = getVariableUsages(context, fragment)
 
-    return framgentUsages.map(usage => ({
+    return framgentUsages.map((usage) => ({
       ...usage,
       variableDefinition: argumentDefs[usage.node.name.value]
         ? argumentDefs[usage.node.name.value]

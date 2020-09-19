@@ -1,8 +1,9 @@
 import { ValidationRule } from "graphql"
-import { GraphQLError, valueFromAST } from "./dependencies"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
-import { findFragmentDefinitionParent, containsVariableNodes, makeNonNullable } from "./utils"
+import { GraphQLError, valueFromAST } from "./dependencies"
+import { containsVariableNodes, findFragmentDefinitionParent, makeNonNullable } from "./utils"
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayDefaultValueOfCorrectType: ValidationRule = function RelayDefaultValueOfCorrectType(context) {
   return {
     Directive(directive, _key, _parent, _path, ancestors) {
@@ -16,11 +17,11 @@ export const RelayDefaultValueOfCorrectType: ValidationRule = function RelayDefa
 
       const typedArguments = getFragmentArgumentDefinitions(context, fragmentDefinition)
 
-      directive.arguments.forEach(argument => {
+      directive.arguments.forEach((argument) => {
         if (argument.value.kind !== "ObjectValue") {
           return
         }
-        const defaultValueField = argument.value.fields.find(f => f.name.value === "defaultValue")
+        const defaultValueField = argument.value.fields.find((f) => f.name.value === "defaultValue")
         if (!defaultValueField) {
           return
         }

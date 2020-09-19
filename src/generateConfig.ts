@@ -2,16 +2,16 @@ import * as path from "path"
 
 import { ApolloConfigFormat } from "apollo-language-server/lib/config"
 import { ValidationRule } from "graphql"
-import { defaultValidationRules, RelayConfig, RelayCompilerMain } from "./dependencies"
+import { defaultValidationRules, RelayCompilerMain, RelayConfig } from "./dependencies"
 import { generateDirectivesFile } from "./generateDirectivesFile"
+import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
+import { RelayCompatMissingConnectionDirective } from "./RelayCompatMissingConnectionDirective"
+import { RelayCompatRequiredPageInfoFields } from "./RelayCompatRequiredPageInfoFields"
+import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
 import { RelayKnownArgumentNames } from "./RelayKnownArgumentNames"
 import { RelayKnownVariableNames } from "./RelayKnownVariableNames"
-import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
-import { RelayArgumentsOfCorrectType } from "./RelayArgumentsOfCorrectType"
-import { RelayDefaultValueOfCorrectType } from "./RelayDefaultValueOfCorrectType"
-import { RelayCompatRequiredPageInfoFields } from "./RelayCompatRequiredPageInfoFields"
-import { RelayCompatMissingConnectionDirective } from "./RelayCompatMissingConnectionDirective"
 import { RelayNoUnusedArguments } from "./RelayNoUnusedArguments"
+import { RelayVariablesInAllowedPosition } from "./RelayVariablesInAllowedPosition"
 
 const DEFAULTS = {
   localSchemaFile: "./data/schema.graphql",
@@ -70,7 +70,7 @@ export function generateConfig(compat: boolean = false) {
         RelayNoUnusedArguments,
         ...compatOnlyRules,
         ...defaultValidationRules.filter(
-          (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.includes(rule.name)
+          (rule: ValidationRule) => !ValidationRulesToExcludeForRelay.some((name) => rule.name.startsWith(name))
         ),
       ],
       includes: [directivesFile, path.join((relayConfig || DEFAULTS).src, includesGlobPattern(extensions))],

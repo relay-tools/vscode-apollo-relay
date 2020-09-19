@@ -1,6 +1,6 @@
-import { directivesFilename, generateDirectivesFile } from "../src/generateDirectivesFile"
-import { unlinkSync, existsSync, readFileSync } from "fs"
+import { existsSync, readFileSync, unlinkSync } from "fs"
 import { parse, visit } from "graphql"
+import { directivesFilename, generateDirectivesFile } from "../src/generateDirectivesFile"
 
 describe(generateDirectivesFile, () => {
   const tempfile = directivesFilename()
@@ -27,13 +27,16 @@ describe(generateDirectivesFile, () => {
     })
     expect(directives.sort()).toMatchInlineSnapshot(`
       Array [
+        "DEPRECATED__relay_ignore_unused_variables_error",
+        "appendEdge",
         "argumentDefinitions",
         "arguments",
         "connection",
-        "connection_resolver",
+        "deleteRecord",
         "inline",
         "match",
         "module",
+        "prependEdge",
         "raw_response_type",
         "refetchable",
         "relay",

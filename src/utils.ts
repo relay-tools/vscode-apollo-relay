@@ -1,13 +1,13 @@
 import {
   ASTNode,
-  FragmentSpreadNode,
-  FragmentDefinitionNode,
-  GraphQLType,
-  FieldNode,
   DirectiveNode,
+  FieldNode,
+  FragmentDefinitionNode,
+  FragmentSpreadNode,
   GraphQLOutputType,
+  GraphQLType,
 } from "graphql"
-import { visit, BREAK, GraphQLNonNull, getNullableType, GraphQLObjectType } from "./dependencies"
+import { BREAK, getNullableType, GraphQLNonNull, GraphQLObjectType, visit } from "./dependencies"
 
 export function findFragmentSpreadParent(nodes: readonly any[]): FragmentSpreadNode | undefined {
   return nodes.find(isFragmentSpread)
@@ -45,23 +45,23 @@ export function makeNonNullable(type: GraphQLType): GraphQLType {
 }
 
 export function getConnectionDirective(fieldNode: FieldNode): { key: string | null; directive: DirectiveNode } | null {
-  const directive = fieldNode.directives && fieldNode.directives.find(d => d.name.value === "connection")
+  const directive = fieldNode.directives && fieldNode.directives.find((d) => d.name.value === "connection")
 
   if (!directive) {
     return null
   }
 
-  const keyArgument = directive.arguments && directive.arguments.find(arg => arg.name.value === "key")
+  const keyArgument = directive.arguments && directive.arguments.find((arg) => arg.name.value === "key")
   if (!keyArgument || keyArgument.value.kind !== "StringValue") {
     return {
       key: null,
-      directive: directive,
+      directive,
     }
   }
 
   return {
     key: keyArgument.value.value,
-    directive: directive,
+    directive,
   }
 }
 

@@ -1,7 +1,7 @@
-import { RelayVariablesInAllowedPosition } from "../src/RelayVariablesInAllowedPosition"
-import { parse, buildSchema, validate } from "graphql"
-import { generateDirectivesFile } from "../src/generateDirectivesFile"
 import { readFileSync } from "fs"
+import { buildSchema, parse, validate } from "graphql"
+import { generateDirectivesFile } from "../src/generateDirectivesFile"
+import { RelayVariablesInAllowedPosition } from "../src/RelayVariablesInAllowedPosition"
 
 const schema = buildSchema(`
 ${readFileSync(generateDirectivesFile(), "utf8")}

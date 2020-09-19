@@ -1,18 +1,19 @@
 import {
-  FragmentSpreadNode,
-  ValidationRule,
-  FragmentDefinitionNode,
-  ValidationContext,
   DirectiveNode,
-  TypeNode,
+  FragmentDefinitionNode,
+  FragmentSpreadNode,
   ObjectValueNode,
+  TypeNode,
+  ValidationContext,
+  ValidationRule,
 } from "graphql"
-import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
 import { getArgumentDefinitions } from "./argumentDefinitions"
+import { defaultValidationRules, didYouMean, GraphQLError, parseType, suggestionList, visit } from "./dependencies"
 import { containsVariableNodes } from "./utils"
 
-const KnownArgumentNames = defaultValidationRules.find(rule => rule.name === "KnownArgumentNames")!
+const KnownArgumentNames = defaultValidationRules.find((rule) => rule.name.startsWith("KnownArgumentNames"))!
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayKnownArgumentNames: ValidationRule = function RelayKnownArgumentNames(context) {
   const originalRuleVisitor = KnownArgumentNames(context)
   return {
@@ -28,7 +29,7 @@ export const RelayKnownArgumentNames: ValidationRule = function RelayKnownArgume
       if (
         fragmentDefinitionNode &&
         (!fragmentSpreadNode.directives ||
-          fragmentSpreadNode.directives.findIndex(directive => directive.name.value === "arguments") === -1) &&
+          fragmentSpreadNode.directives.findIndex((directive) => directive.name.value === "arguments") === -1) &&
         getArgumentDefinitions(fragmentDefinitionNode)
       ) {
         validateFragmentArguments(context, fragmentDefinitionNode, fragmentSpreadNode)
@@ -60,9 +61,9 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
   if (!directiveNode.arguments || directiveNode.arguments.length === 0) {
     context.reportError(new GraphQLError(`Missing required argument definitions.`, directiveNode))
   } else {
-    directiveNode.arguments.forEach(argumentNode => {
+    directiveNode.arguments.forEach((argumentNode) => {
       const metadataNode = argumentNode.value
-      if (metadataNode.kind !== "ObjectValue" || !metadataNode.fields.some(field => field.name.value === "type")) {
+      if (metadataNode.kind !== "ObjectValue" || !metadataNode.fields.some((field) => field.name.value === "type")) {
         context.reportError(
           new GraphQLError(
             `Metadata of argument definition should be of type "Object" with a "type" and optional "defaultValue" key.`,
@@ -70,7 +71,7 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
           )
         )
       } else {
-        metadataNode.fields.forEach(fieldNode => {
+        metadataNode.fields.forEach((fieldNode) => {
           const name = fieldNode.name.value
           if (name !== "type" && name !== "defaultValue") {
             context.reportError(
@@ -124,7 +125,7 @@ function validateFragmentArgumentDefinitions(context: ValidationContext, directi
 }
 
 function isNullableArgument(argumentDefinition: ObjectValueNode): boolean {
-  const typeField = argumentDefinition.fields.find(f => f.name.value === "type")
+  const typeField = argumentDefinition.fields.find((f) => f.name.value === "type")
   if (typeField == null) {
     return false
   }
@@ -156,15 +157,15 @@ function validateFragmentArguments(
     )
   } else {
     const argumentNodes = [...((directiveNode && directiveNode.arguments) || [])]
-    argumentDefinitionNodes.forEach(argumentDef => {
-      const argumentIndex = argumentNodes.findIndex(a => a.name.value === argumentDef.name.value)
+    argumentDefinitionNodes.forEach((argumentDef) => {
+      const argumentIndex = argumentNodes.findIndex((a) => a.name.value === argumentDef.name.value)
       if (argumentIndex >= 0) {
         argumentNodes.splice(argumentIndex, 1)
       } else {
         const value = argumentDef.value
         if (value.kind === "ObjectValue") {
           if (
-            value.fields.findIndex(field => field.name.value === "defaultValue") === -1 &&
+            value.fields.findIndex((field) => field.name.value === "defaultValue") === -1 &&
             !isNullableArgument(value)
           ) {
             context.reportError(
@@ -179,14 +180,14 @@ function validateFragmentArguments(
         }
       }
     })
-    argumentNodes.forEach(argumentNode => {
+    argumentNodes.forEach((argumentNode) => {
       const suggestions: string[] = suggestionList(
         argumentNode.name.value,
-        argumentDefinitionNodes.map(argDef => argDef.name.value)
+        argumentDefinitionNodes.map((argDef) => argDef.name.value)
       )
       context.reportError(
         new GraphQLError(
-          `Unknown fragment argument "${argumentNode.name.value}".` + didYouMean(suggestions.map(x => `"${x}"`)),
+          `Unknown fragment argument "${argumentNode.name.value}".` + didYouMean(suggestions.map((x) => `"${x}"`)),
           directiveNode
         )
       )

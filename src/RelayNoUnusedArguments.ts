@@ -1,11 +1,12 @@
 import { ValidationRule } from "graphql"
 import { getFragmentArgumentDefinitions } from "./argumentDefinitions"
-import { visit, GraphQLError } from "./dependencies"
+import { GraphQLError, visit } from "./dependencies"
 
 export function unusedArgumentMessage(varName: string, framgnetName: string): string {
   return `Argument "${varName}" in fragment "${framgnetName}" is never used.`
 }
 
+// tslint:disable-next-line: no-shadowed-variable
 export const RelayNoUnusedArguments: ValidationRule = function RelayNoUnusedArguments(context) {
   return {
     FragmentDefinition(fragmentDef) {
@@ -18,7 +19,7 @@ export const RelayNoUnusedArguments: ValidationRule = function RelayNoUnusedArgu
         },
       })
 
-      Object.keys(argumentDefinitions).forEach(arg => {
+      Object.keys(argumentDefinitions).forEach((arg) => {
         const definition = argumentDefinitions[arg]
 
         if (!usages[arg]) {

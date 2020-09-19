@@ -6,8 +6,8 @@
 
 import * as _ApolloValidation from "apollo-language-server/lib/errors/validation"
 import * as _GraphQL from "graphql"
-import * as _RelayConfig from "relay-config"
 import * as _RelayCompilerMain from "relay-compiler/lib/bin/RelayCompilerMain"
+import * as _RelayConfig from "relay-config"
 
 let mod = module
 if (typeof jest === "undefined") {
@@ -49,18 +49,25 @@ export const suggestionList = mod.require("graphql/jsutils/suggestionList").defa
 
 let relayConfigMod: typeof _RelayConfig | null = null
 try {
+  // tslint:disable-next-line: no-var-requires
   relayConfigMod = require("relay-config")
-} catch (_) {}
+} catch {
+  // ignore
+}
 export const RelayConfig = relayConfigMod
 
 let relayCompilerMainMod: typeof _RelayCompilerMain | null = null
 try {
   // relay-compiler v6
+  // tslint:disable-next-line: no-var-requires
   relayCompilerMainMod = require("relay-compiler/lib/bin/RelayCompilerMain")
-} catch (_) {
+} catch {
   try {
     // relay-compiler v5
+    // tslint:disable-next-line: no-var-requires
     relayCompilerMainMod = require("relay-compiler/lib/RelayCompilerMain")
-  } catch (_) {}
+  } catch {
+    // ignore
+  }
 }
 export const RelayCompilerMain = relayCompilerMainMod
