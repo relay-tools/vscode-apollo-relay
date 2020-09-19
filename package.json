@@ -1,6 +1,6 @@
 {
   "name": "vscode-apollo-relay",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "Simple configuration of vscode-apollo for Relay projects.",
   "keywords": [
     "apollo",
