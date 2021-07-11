@@ -85,4 +85,4 @@ yarn run test
 MIT © [Eloy Durán](https://github.com/alloy)
 
 [vscode-apollo]: https://marketplace.visualstudio.com/items?itemName=apollographql.vscode-apollo
-[relay-config]: https://relay.dev/docs/en/installation-and-setup#set-up-relay-with-a-single-config-file
+[relay-config]: https://relay.dev/docs/getting-started/installation-and-setup/#set-up-relay-with-a-single-config-file
