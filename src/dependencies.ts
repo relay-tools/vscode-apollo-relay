@@ -9,18 +9,11 @@ import * as _GraphQL from "graphql"
 import * as _RelayCompilerMain from "relay-compiler/lib/bin/RelayCompilerMain"
 import * as _RelayConfig from "relay-config"
 
-let mod = module
-if (typeof jest === "undefined") {
-  while (mod && !mod.id.includes("apollographql.vscode-apollo")) {
-    mod = mod.parent!
-  }
-  if (mod === null) {
-    throw new Error("Unable to find vscode-apollo's node_modules")
-  }
-}
+const mod = require.main || module
+const isJest = typeof jest !== "undefined"
 
 export const { defaultValidationRules } = mod.require(
-  "apollo-language-server/lib/errors/validation"
+  isJest ? "apollo-language-server/lib/errors/validation" : "./errors/validation"
 ) as typeof _ApolloValidation
 
 export const {
