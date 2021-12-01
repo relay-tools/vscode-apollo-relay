@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.2](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.5.1...v1.5.2) (2021-12-01)
+
+
+### Bug Fixes
+
+* dependency import defaultValidationRules ([e4f5d6e](https://github.com/relay-tools/vscode-apollo-relay/commit/e4f5d6eb00126a39c8d66965c0f144d436f50d11))
+
 ### [1.5.1](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.4...v1.5.1) (2020-09-19)
 
 ### [1.4.4](https://github.com/relay-tools/vscode-apollo-relay/compare/v1.4.3...v1.4.4) (2020-09-19)
